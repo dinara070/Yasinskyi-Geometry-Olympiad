@@ -113,6 +113,15 @@ TRANSLATIONS = {
         "chart_title": "Динаміка зростання олімпіади",
         "winners_table_title": "🏆 Призери останньої олімпіади (Демо-дані)",
         "abs_winner": "Абсолютний переможець 2024",
+        
+        # Archive Theory (NEW)
+        "archive_theory_title": "📘 Корисна теорія для олімпіадника",
+        "theo_1_title": "Теорема Чеви",
+        "theo_1_text": "Відрізки, що з'єднують вершини трикутника з точками на протилежних сторонах, перетинаються в одній точці тоді й тільки тоді, коли:",
+        "theo_2_title": "Теорема Менелая",
+        "theo_2_text": "Три точки на сторонах трикутника (або їх продовженнях) лежать на одній прямій тоді й тільки тоді, коли:",
+        "theo_3_title": "Теорема Птолемея",
+        "theo_3_text": "Для вписаного чотирикутника добуток діагоналей дорівнює сумі добутків протилежних сторін:",
 
         # Contacts & Footer
         "contact_page_title": "📞 Контакти",
@@ -189,6 +198,15 @@ TRANSLATIONS = {
         "chart_title": "Olympiad Growth Dynamics",
         "winners_table_title": "🏆 Last Olympiad Winners (Demo Data)",
         "abs_winner": "Absolute Winner 2024",
+
+        # Archive Theory (NEW)
+        "archive_theory_title": "📘 Useful Theory for Olympiads",
+        "theo_1_title": "Ceva's Theorem",
+        "theo_1_text": "Cevians AD, BE, CF are concurrent if and only if:",
+        "theo_2_title": "Menelaus' Theorem",
+        "theo_2_text": "Points D, E, F on the sides (or extensions) are collinear if and only if:",
+        "theo_3_title": "Ptolemy's Theorem",
+        "theo_3_text": "For a cyclic quadrilateral, the product of diagonals equals the sum of products of opposite sides:",
 
         "contact_page_title": "📞 Contacts",
         "invite_text": "The Yasinskyi Geometry Olympiad invites mathematicians, educators, and authors of geometry problems to collaborate to transform this Olympiad into a world-class event.",
@@ -297,7 +315,7 @@ elif current_page == "current":
         if st.form_submit_button(t["f_submit"], type="primary"):
             st.success(t["success_msg"])
 
-# === ARCHIVE ===
+# === ARCHIVE (Оновлено: додано теорію) ===
 elif current_page == "archive":
     st.title(t["archive_title"])
     st.info("💡 " + t["zip_generating"])
@@ -326,6 +344,27 @@ elif current_page == "archive":
                 for link in year_links: st.link_button(f"📄 {link['name']} ({t['link_view']})", link['url'])
             else: st.caption("Web archive.")
 
+    # --- НОВИЙ БЛОК ТЕОРІЇ ---
+    st.markdown("---")
+    st.subheader(t["archive_theory_title"])
+    
+    col_t1, col_t2, col_t3 = st.columns(3)
+    
+    with col_t1:
+        st.info("📌 " + t["theo_1_title"])
+        st.markdown(t["theo_1_text"])
+        st.latex(r"\frac{AF}{FB} \cdot \frac{BD}{DC} \cdot \frac{CE}{EA} = 1")
+
+    with col_t2:
+        st.info("📌 " + t["theo_2_title"])
+        st.markdown(t["theo_2_text"])
+        st.latex(r"\frac{AF}{FB} \cdot \frac{BD}{DC} \cdot \frac{CE}{EA} = 1")
+        
+    with col_t3:
+        st.info("📌 " + t["theo_3_title"])
+        st.markdown(t["theo_3_text"])
+        st.latex(r"AC \cdot BD = AB \cdot CD + BC \cdot AD")
+
 # === HISTORY ===
 elif current_page == "history":
     st.title(t["hist_title"])
@@ -350,11 +389,10 @@ elif current_page == "history":
             'Participants': [58, 76, 129, 136, 169, 145, 100, 58, 139]}
     st.bar_chart(pd.DataFrame(data).set_index('Year'), color="#800000")
 
-# === CONTACTS (Оновлено) ===
+# === CONTACTS ===
 elif current_page == "contacts":
     st.title(t["contact_page_title"])
     
-    # НОВИЙ ТЕКСТ (Запрошення до співпраці)
     st.success(f"🤝 **{t['invite_text']}**")
     st.markdown("---")
 
