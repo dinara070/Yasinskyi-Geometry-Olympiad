@@ -6,7 +6,6 @@ from bs4 import BeautifulSoup
 from urllib.parse import urljoin, unquote
 import io
 import zipfile
-from datetime import datetime
 
 # --- 1. Налаштування сторінки ---
 st.set_page_config(
@@ -64,8 +63,21 @@ TRANSLATIONS = {
         "metric_countries": "Країн-учасниць",
         "metric_total": "Всього учасників",
         "chart_title": "Динаміка зростання олімпіади",
+        
+        # КОНТАКТИ (UA)
         "contact_title": "Зв'язок з організаторами",
-        "contact_text": "Ми запрошуємо вчителів та авторів задач до співпраці!",
+        "contact_subtitle_phones": "Контактні телефони:",
+        "contact_address_label": "Наша адреса:",
+        "contact_address_val": "21100, м. Вінниця, вул. Острозького, 32<br>Корпус 3, 5-й поверх.",
+        "contact_email_label": "Email:",
+        "contact_email_val": "yasinskyi.geometry.olympiad@gmail.com",
+        "c_person_1": "**Коношевський Олег Леонідович**",
+        "c_role_1": "доцент кафедри алгебри і методики навчання математики",
+        "c_phone_1": "(067) 29-010-78",
+        "c_person_2": "**Панасенко Олексій Борисович**",
+        "c_role_2": "доцент кафедри алгебри і методики навчання математики",
+        "c_phone_2": "(067) 215-15-71, (063) 153-04-67",
+        
         "feedback_label": "Напишіть нам повідомлення",
         "send_btn": "Надіслати"
     },
@@ -115,8 +127,21 @@ TRANSLATIONS = {
         "metric_countries": "Participating Countries",
         "metric_total": "Total Participants",
         "chart_title": "Olympiad Growth Dynamics",
+        
+        # CONTACTS (EN)
         "contact_title": "Contact Organizers",
-        "contact_text": "We invite teachers and problem authors to collaborate!",
+        "contact_subtitle_phones": "Contact Phones:",
+        "contact_address_label": "Our Address:",
+        "contact_address_val": "21100, Vinnytsia, Ostrozkoho Str., 32<br>Building 3, 5th Floor.",
+        "contact_email_label": "Email:",
+        "contact_email_val": "yasinskyi.geometry.olympiad@gmail.com",
+        "c_person_1": "**Konoshevskyi Oleh Leonidovych**",
+        "c_role_1": "Associate Professor, Department of Algebra and Methods of Teaching Mathematics",
+        "c_phone_1": "+38 (067) 29-010-78",
+        "c_person_2": "**Panasenko Oleksii Borysovych**",
+        "c_role_2": "Associate Professor, Department of Algebra and Methods of Teaching Mathematics",
+        "c_phone_2": "+38 (067) 215-15-71, +38 (063) 153-04-67",
+
         "feedback_label": "Send us a message",
         "send_btn": "Send"
     }
@@ -129,6 +154,7 @@ st.markdown("""
     .header-faculty { color: #2c3e50; font-family: sans-serif; text-align: center; font-size: 1.1rem; font-weight: bold; }
     .header-dept { color: #555; text-align: center; font-style: italic; margin-bottom: 20px; border-bottom: 2px solid #800000; padding-bottom: 10px; }
     .rules-card { background-color: #f0f8ff; padding: 20px; border-radius: 8px; border-left: 5px solid #007bff; margin-bottom: 15px; }
+    .contact-card { background-color: #ffffff; padding: 15px; border-radius: 8px; border: 1px solid #e0e0e0; margin-bottom: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
     .stButton>button { width: 100%; border-radius: 5px; }
     </style>
     """, unsafe_allow_html=True)
@@ -138,7 +164,7 @@ PHOTO_YASINSKYI = "yasinskyi.png"
 LOGO_FILE = "logo.png"            
 TARGET_URL = "https://yasinskyi-geometry-olympiad.com/"
 
-@st.cache_data(ttl=3600) # Кешуємо результати сканування на 1 годину
+@st.cache_data(ttl=3600)
 def get_live_pdf_links():
     """Сканує реальний сайт і повертає список посилань"""
     try:
@@ -225,22 +251,19 @@ elif current_page == "current":
         if st.form_submit_button(t["f_submit"], type="primary"):
             st.success(t["success_msg"])
 
-# === ARCHIVE (LIVE SCANNER) ===
+# === ARCHIVE ===
 elif current_page == "archive":
     st.title(t["archive_title"])
-    
-    # 1. Кнопка масового скачування (ZIP)
     st.info("💡 " + t["zip_generating"].replace("...", "."))
     
     if st.button(t["btn_zip"]):
         with st.spinner("Завантаження файлів з серверу..."):
-            links = get_live_pdf_links() # Скануємо сайт
+            links = get_live_pdf_links()
             if links:
                 zip_buffer = io.BytesIO()
                 with zipfile.ZipFile(zip_buffer, "w") as zf:
                     for item in links:
                         try:
-                            # Качаємо файл в пам'ять
                             resp = requests.get(item["url"], headers={"User-Agent": "Mozilla/5.0"}, timeout=10)
                             if resp.status_code == 200:
                                 zf.writestr(item["name"], resp.content)
@@ -252,19 +275,13 @@ elif current_page == "archive":
 
     st.markdown("---")
     st.subheader("Перегляд за роками (Live Links)")
-    
-    # Отримуємо посилання для відображення
     all_links = get_live_pdf_links()
-    
     years = range(2025, 2016, -1)
     for year in years:
         with st.expander(f"📁 {year} рік"):
-            # Шукаємо посилання, які містять рік у назві
             year_links = [L for L in all_links if str(year) in L['name']]
-            
             if year_links:
                 for link in year_links:
-                    # Пряме посилання на сайт (Hotlink)
                     st.link_button(f"📄 {link['name']} ({t['link_view']})", link['url'])
             else:
                 st.caption(f"Матеріали за {year} рік доступні у повному ZIP-архіві або на сайті.")
@@ -281,16 +298,45 @@ elif current_page == "history":
             'Participants': [58, 76, 129, 136, 169, 145, 100, 58, 139]}
     st.bar_chart(pd.DataFrame(data).set_index('Year'), color="#800000")
 
-# === CONTACTS ===
+# === CONTACTS (UPDATED) ===
 elif current_page == "contacts":
     st.title(t["contacts"].split(" ")[-1])
-    c1, c2 = st.columns(2)
-    with c1:
+    
+    col1, col2 = st.columns([1.5, 1])
+    
+    with col1:
         st.markdown(f"### {t['contact_title']}")
-        st.info("📧 **Email:** yasinskyi.geometry.olympiad@gmail.com")
-        st.write(t["contact_text"])
-        st.markdown("""**Адреса:**<br>21100, м. Вінниця, вул. Острозького, 32<br>Корпус 3, 5-й поверх.""", unsafe_allow_html=True)
-    with c2:
+        
+        # Адреса та Email
+        st.markdown(f"""
+        **{t['contact_address_label']}**<br>{t['contact_address_val']}<br><br>
+        **{t['contact_email_label']}** {t['contact_email_val']}
+        """, unsafe_allow_html=True)
+        
+        st.markdown("---")
+        
+        # Телефони та викладачі
+        st.subheader(t["contact_subtitle_phones"])
+        
+        # Картка викладача 1
+        st.markdown(f"""
+        <div class="contact-card">
+            {t['c_person_1']}<br>
+            <span style="color:grey; font-size:0.9em;">{t['c_role_1']}</span><br>
+            📞 <b>{t['c_phone_1']}</b>
+        </div>
+        """, unsafe_allow_html=True)
+
+        # Картка викладача 2
+        st.markdown(f"""
+        <div class="contact-card">
+            {t['c_person_2']}<br>
+            <span style="color:grey; font-size:0.9em;">{t['c_role_2']}</span><br>
+            📞 <b>{t['c_phone_2']}</b>
+        </div>
+        """, unsafe_allow_html=True)
+        
+    with col2:
         st.markdown(f"### {t['feedback_label']}")
         st.text_area("", height=150)
         st.button(t["send_btn"])
