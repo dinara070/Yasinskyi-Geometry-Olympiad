@@ -7,15 +7,41 @@ from urllib.parse import urljoin, unquote
 import io
 import zipfile
 
-# --- 1. Налаштування сторінки ---
+# --- 1. Налаштування сторінки (Page Config) ---
 st.set_page_config(
     page_title="Yasinskyi Geometry Olympiad | VSPU",
-    page_icon="📐",
+    page_icon="📐", # Власна іконка (Геометрія)
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-# --- 2. Словник перекладів ---
+# --- 2. Візуальний тюнінг (CSS) ---
+# Приховуємо елементи Streamlit, щоб виглядало як сайт
+hide_st_style = """
+    <style>
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    header {visibility: hidden;}
+    
+    /* Додаткові стилі для краси */
+    .block-container {
+        padding-top: 1rem; /* Зменшуємо відступ зверху */
+    }
+    .header-university { color: #800000; font-family: 'Times New Roman', serif; text-align: center; margin-bottom: 0px; }
+    .header-faculty { color: #2c3e50; font-family: sans-serif; text-align: center; font-size: 1.1rem; font-weight: bold; }
+    .header-dept { color: #555; text-align: center; font-style: italic; margin-bottom: 20px; border-bottom: 2px solid #800000; padding-bottom: 10px; }
+    
+    /* Картки */
+    .rules-card { background-color: #f0f8ff; padding: 20px; border-radius: 8px; border-left: 5px solid #007bff; margin-bottom: 15px; }
+    .contact-card { background-color: #ffffff; padding: 15px; border-radius: 8px; border: 1px solid #e0e0e0; margin-bottom: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+    
+    /* Кнопки */
+    .stButton>button { width: 100%; border-radius: 5px; }
+    </style>
+"""
+st.markdown(hide_st_style, unsafe_allow_html=True)
+
+# --- 3. Словник перекладів ---
 TRANSLATIONS = {
     "ua": {
         "uni_name": "Вінницький державний педагогічний університет<br>імені Михайла Коцюбинського",
@@ -64,8 +90,8 @@ TRANSLATIONS = {
         "metric_total": "Всього учасників",
         "chart_title": "Динаміка зростання олімпіади",
         
-        # КОНТАКТИ (UA)
-        "contact_page_title": "📞 Контакти", # Додав цей ключ, щоб виправити помилку
+        # КОНТАКТИ
+        "contact_page_title": "📞 Контакти",
         "contact_title": "Зв'язок з організаторами",
         "contact_subtitle_phones": "Контактні телефони:",
         "contact_address_label": "Наша адреса:",
@@ -149,18 +175,6 @@ TRANSLATIONS = {
     }
 }
 
-# --- 3. CSS ---
-st.markdown("""
-    <style>
-    .header-university { color: #800000; font-family: 'Times New Roman', serif; text-align: center; margin-bottom: 0px; }
-    .header-faculty { color: #2c3e50; font-family: sans-serif; text-align: center; font-size: 1.1rem; font-weight: bold; }
-    .header-dept { color: #555; text-align: center; font-style: italic; margin-bottom: 20px; border-bottom: 2px solid #800000; padding-bottom: 10px; }
-    .rules-card { background-color: #f0f8ff; padding: 20px; border-radius: 8px; border-left: 5px solid #007bff; margin-bottom: 15px; }
-    .contact-card { background-color: #ffffff; padding: 15px; border-radius: 8px; border: 1px solid #e0e0e0; margin-bottom: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-    .stButton>button { width: 100%; border-radius: 5px; }
-    </style>
-    """, unsafe_allow_html=True)
-
 # --- 4. Змінні та Кешування ---
 PHOTO_YASINSKYI = "yasinskyi.png" 
 LOGO_FILE = "logo.png"            
@@ -200,7 +214,7 @@ with st.sidebar:
     st.markdown("---")
     st.caption(t["uni_name"].replace("<br>", " "))
 
-# --- 6. Шапка ---
+# --- 6. Шапка (Університет) ---
 col_l, col_c, col_r = st.columns([1, 6, 1])
 with col_l:
     if os.path.exists(LOGO_FILE): st.image(LOGO_FILE, width=90)
@@ -212,15 +226,20 @@ with col_c:
 
 # --- 7. Контент ---
 
-# === HOME ===
+# === HOME (Герой: 1 до 2) ===
 if current_page == "home":
     st.title(t["banner_title"])
+    
+    # Виконуємо прохання: дві колонки [1, 2]
     col1, col2 = st.columns([1, 2])
+    
     with col1:
         if os.path.exists(PHOTO_YASINSKYI):
             st.image(PHOTO_YASINSKYI, caption=t["caption_name"], use_container_width=True)
         else:
             st.warning("Фото відсутнє (yasinskyi.png)")
+            st.image("https://via.placeholder.com/300x400?text=Yasinskyi", use_container_width=True)
+            
     with col2:
         st.markdown(t["about_desc"])
         st.markdown(f"### {t['rules_title']}")
@@ -300,28 +319,24 @@ elif current_page == "history":
             'Participants': [58, 76, 129, 136, 169, 145, 100, 58, 139]}
     st.bar_chart(pd.DataFrame(data).set_index('Year'), color="#800000")
 
-# === CONTACTS (FIXED) ===
+# === CONTACTS ===
 elif current_page == "contacts":
-    # ВИПРАВЛЕНО: Використовуємо існуючий ключ
     st.title(t["contact_page_title"]) 
     
     col1, col2 = st.columns([1.5, 1])
     
     with col1:
         st.markdown(f"### {t['contact_title']}")
-        
-        # Адреса та Email
+        # Адреса
         st.markdown(f"""
         **{t['contact_address_label']}**<br>{t['contact_address_val']}<br><br>
         **{t['contact_email_label']}** {t['contact_email_val']}
         """, unsafe_allow_html=True)
         
         st.markdown("---")
-        
-        # Телефони та викладачі
+        # Телефони (Картки)
         st.subheader(t["contact_subtitle_phones"])
         
-        # Картка викладача 1
         st.markdown(f"""
         <div class="contact-card">
             {t['c_person_1']}<br>
@@ -330,7 +345,6 @@ elif current_page == "contacts":
         </div>
         """, unsafe_allow_html=True)
 
-        # Картка викладача 2
         st.markdown(f"""
         <div class="contact-card">
             {t['c_person_2']}<br>
@@ -352,7 +366,3 @@ elif current_page == "method":
         st.write("Генератор методичної картки")
         st.text_input("Тема")
         st.form_submit_button("Згенерувати")
-
-# --- Footer ---
-st.markdown("---")
-st.markdown(f"<div style='text-align:center; color:grey'>{t['uni_name']} | 2025</div>", unsafe_allow_html=True)
