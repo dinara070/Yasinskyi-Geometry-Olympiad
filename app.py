@@ -21,17 +21,17 @@ hide_st_style = """
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
     header {visibility: hidden;}
-
+    
     .block-container { padding-top: 1rem; }
     .header-university { color: #800000; font-family: 'Times New Roman', serif; text-align: center; margin-bottom: 0px; }
     .header-faculty { color: #2c3e50; font-family: sans-serif; text-align: center; font-size: 1.1rem; font-weight: bold; }
     .header-dept { color: #555; text-align: center; font-style: italic; margin-bottom: 20px; border-bottom: 2px solid #800000; padding-bottom: 10px; }
-
+    
     /* Картки */
     .rules-card { background-color: #f0f8ff; padding: 20px; border-radius: 8px; border-left: 5px solid #007bff; margin-bottom: 15px; }
     .contact-card { background-color: #ffffff; padding: 15px; border-radius: 8px; border: 1px solid #e0e0e0; margin-bottom: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
     .bio-card { background-color: #f9f9f9; padding: 20px; border-radius: 10px; border: 1px solid #ddd; }
-
+    
     /* Футер */
     .footer {
         position: fixed;
@@ -45,14 +45,14 @@ hide_st_style = """
         border-top: 1px solid #eaeaea;
         font-size: 0.9rem;
     }
-
+    
     /* Кнопки */
     .stButton>button { width: 100%; border-radius: 5px; }
     </style>
 """
 st.markdown(hide_st_style, unsafe_allow_html=True)
 
-# --- 3. Словник перекладів ---
+# --- 3. Словник перекладів (ОНОВЛЕНО) ---
 TRANSLATIONS = {
     "ua": {
         "uni_name": "Вінницький державний педагогічний університет<br>імені Михайла Коцюбинського",
@@ -71,7 +71,7 @@ TRANSLATIONS = {
         "tab_general": "ℹ️ Загальна інформація",
         "tab_bio": "👤 Біографія В. Ясінського",
         "tab_faq": "❓ FAQ (Питання)",
-
+        
         "banner_title": "Геометрична олімпіада імені В'ячеслава Ясінського",
         "about_desc": """
         **Геометрична олімпіада імені В'ячеслава Ясінського** — це щорічне змагання, яке об'єднує поціновувачів геометричних задач.
@@ -92,14 +92,14 @@ TRANSLATIONS = {
         Нехай $ABC$ — гострокутний трикутник, в якому $AB < AC$. Коло $\omega$ проходить через точки $B$ і $C$ та перетинає сторони $AB$ і $AC$ у точках $D$ і $E$ відповідно.
         Доведіть, що якщо $BD = CE$, то:
         """,
-
+        
         # BIO
         "bio_title": "В'ячеслав Андрійович Ясінський (1957-2015)",
         "bio_text": """
         **В'ячеслав Андрійович Ясінський** — видатний український педагог, доцент, Заслужений вчитель України.
         Він присвятив своє життя навчанню обдарованої молоді та популяризації олімпіадного руху.
-
-        В'ячеслав Андрійович був справжнім Майстром геометричної задачі. Його авторські задачі прикрашали не лише українські,
+        
+        В'ячеслав Андрійович був справжнім Майстром геометричної задачі. Його авторські задачі прикрашали не лише українські, 
         а й міжнародні математичні олімпіади. Ця олімпіада створена, щоб продовжити його справу — закохувати учнів у красу геометрії.
         """,
 
@@ -152,7 +152,25 @@ TRANSLATIONS = {
         "c_phone_2": "(067) 215-15-71, (063) 153-04-67",
         "feedback_label": "Напишіть нам повідомлення",
         "send_btn": "Надіслати",
-        "footer_rights": "© 2025 Yasinskyi Geometry Olympiad. Всі права захищено."
+        "footer_rights": "© 2025 Yasinskyi Geometry Olympiad. Всі права захищено.",
+
+        # METHODOLOGICAL & REPORT (NEW)
+        "method_title": "Методичний кабінет та Адміністрування",
+        "report_gen_title": "📊 Генератор звіту для кафедри",
+        "report_desc": "Цей інструмент автоматично формує текст для розділу 'Профорієнтаційна робота' річного звіту кафедри.",
+        "btn_gen_report": "📄 Згенерувати текст звіту",
+        "report_label": "Готовий текст (можна копіювати в Word):",
+        "report_template": """ЗВІТ ПРО ПРОВЕДЕННЯ ПРОФОРІЄНТАЦІЙНОЇ РОБОТИ (ОЛІМПІАДА)
+
+У 2025/2026 н.р. кафедрою алгебри і методики навчання математики було організовано та проведено Геометричну олімпіаду імені В. Ясінського.
+Основні показники заходу:
+1. Загальна кількість учасників: {total} учнів.
+2. Географія учасників: представники {countries} країн (зокрема Україна, Польща, США) та {regions} областей України.
+3. Якісний показник: середній бал учасників склав {avg_score} із 35 можливих.
+4. Найактивніші навчальні заклади:
+   - {schools}
+
+Захід сприяв популяризації математичної освіти та залученню абітурієнтів до вступу на спеціальності факультету."""
     },
     "en": {
         "uni_name": "Vinnytsia Mykhailo Kotsiubynskyi<br>State Pedagogical University",
@@ -171,7 +189,7 @@ TRANSLATIONS = {
         "tab_general": "ℹ️ General Info",
         "tab_bio": "👤 Bio of V. Yasinskyi",
         "tab_faq": "❓ FAQ",
-
+        
         "banner_title": "Yasinskyi Geometry Olympiad",
         "about_desc": """
         **The Yasinskyi Geometry Olympiad** is an annual competition that brings together fans of geometry problems.
@@ -192,14 +210,14 @@ TRANSLATIONS = {
         Let $ABC$ be an acute-angled triangle where $AB < AC$. A circle $\omega$ passes through points $B$ and $C$ and intersects sides $AB$ and $AC$ at points $D$ and $E$ respectively.
         Prove that if $BD = CE$, then:
         """,
-
+        
         # BIO
         "bio_title": "Vyacheslav Andriyovych Yasinskyi (1957-2015)",
         "bio_text": """
         **Vyacheslav Andriyovych Yasinskyi** was an outstanding Ukrainian educator, associate professor, and Honored Teacher of Ukraine.
         He dedicated his life to teaching gifted youth and promoting the Olympiad movement.
-
-        Vyacheslav Andriyovych was a true Master of geometric problems. His authored problems adorned not only Ukrainian
+        
+        Vyacheslav Andriyovych was a true Master of geometric problems. His authored problems adorned not only Ukrainian 
         but also international mathematical Olympiads. This competition was created to continue his legacy — to make students fall in love with the beauty of geometry.
         """,
 
@@ -232,7 +250,7 @@ TRANSLATIONS = {
         "chart_title": "Olympiad Growth Dynamics",
         "winners_table_title": "🏆 Last Olympiad Winners (Demo Data)",
         "abs_winner": "Absolute Winner 2024",
-
+        
         "contact_page_title": "📞 Contacts",
         "contact_title": "Contact Organizers",
         "contact_subtitle_phones": "Contact Phones:",
@@ -248,7 +266,25 @@ TRANSLATIONS = {
         "c_phone_2": "+38 (067) 215-15-71, +38 (063) 153-04-67",
         "feedback_label": "Send us a message",
         "send_btn": "Send",
-        "footer_rights": "© 2025 Yasinskyi Geometry Olympiad. All rights reserved."
+        "footer_rights": "© 2025 Yasinskyi Geometry Olympiad. All rights reserved.",
+
+        # METHODOLOGICAL & REPORT (NEW)
+        "method_title": "Methodological Cabinet & Administration",
+        "report_gen_title": "📊 Department Report Generator",
+        "report_desc": "This tool generates text for the 'Vocational Guidance' section of the annual department report.",
+        "btn_gen_report": "📄 Generate Report Text",
+        "report_label": "Ready text (copy to Word):",
+        "report_template": """REPORT ON VOCATIONAL GUIDANCE ACTIVITIES (OLYMPIAD)
+
+In the 2025/2026 academic year, the Department organized the Yasinskyi Geometry Olympiad.
+Key metrics:
+1. Total participants: {total} students.
+2. Geography: representatives from {countries} countries and {regions} regions of Ukraine.
+3. Performance: average score was {avg_score} out of 35.
+4. Most active schools:
+   - {schools}
+
+The event contributed to the promotion of mathematical education."""
     }
 }
 
@@ -276,7 +312,6 @@ def get_live_pdf_links():
 
 # --- 5. Сайдбар ---
 with st.sidebar:
-    # 3. Багатомовність: Реалізовано через Selectbox, який оновлює змінну t
     lang_sel = st.selectbox("Language / Мова", ["UA", "ENG"])
     lang = "ua" if lang_sel == "UA" else "en"
     t = TRANSLATIONS[lang]
@@ -303,8 +338,7 @@ with col_c:
 # === HOME (Оновлено: Tabs, Bio, FAQ) ===
 if current_page == "home":
     st.title(t["banner_title"])
-
-    # Використовуємо вкладки для кращої структури
+    
     tab_gen, tab_bio, tab_faq = st.tabs([t["tab_general"], t["tab_bio"], t["tab_faq"]])
 
     # --- ВКЛАДКА 1: ЗАГАЛЬНЕ ---
@@ -322,7 +356,7 @@ if current_page == "home":
             st.markdown('<div class="rules-card">', unsafe_allow_html=True)
             for rule in t["rules_list"]: st.markdown(f"{rule}")
             st.markdown('</div>', unsafe_allow_html=True)
-
+        
         st.markdown("---")
         st.subheader("📐 " + t["math_beauty_title"])
         st.info(t["math_beauty_desc"])
@@ -331,18 +365,17 @@ if current_page == "home":
             st.markdown(t["example_problem_text"])
             st.latex(r"\angle A = 60^\circ")
 
-    # --- ВКЛАДКА 2: БІОГРАФІЯ (4. Біографія В. Ясінського) ---
+    # --- ВКЛАДКА 2: БІОГРАФІЯ ---
     with tab_bio:
         st.markdown(f"### {t['bio_title']}")
         c_bio_img, c_bio_txt = st.columns([1, 3])
         with c_bio_img:
-            # Тут можна додати ефект "чорно-білого фото" через CSS, якщо треба, але просто фото теж ок
             if os.path.exists(PHOTO_YASINSKYI):
                 st.image(PHOTO_YASINSKYI, use_container_width=True)
         with c_bio_txt:
             st.markdown(f'<div class="bio-card">{t["bio_text"]}</div>', unsafe_allow_html=True)
 
-    # --- ВКЛАДКА 3: FAQ (6. Розділ FAQ) ---
+    # --- ВКЛАДКА 3: FAQ ---
     with tab_faq:
         st.subheader("Frequently Asked Questions")
         with st.expander(t["faq_q1"]): st.write(t["faq_a1"])
@@ -391,7 +424,7 @@ elif current_page == "archive":
                 zip_buffer.seek(0)
                 st.download_button("💾 Download .ZIP", zip_buffer, "yasinskyi_full_archive.zip", "application/zip")
             else: st.error("Error fetching files.")
-
+    
     st.markdown("---")
     st.subheader("Live Links")
     all_links = get_live_pdf_links()
@@ -402,21 +435,17 @@ elif current_page == "archive":
                 for link in year_links: st.link_button(f"📄 {link['name']} ({t['link_view']})", link['url'])
             else: st.caption("Web archive.")
 
-# === HISTORY (Оновлено: 5. Інтерактивна галерея) ===
+# === HISTORY ===
 elif current_page == "history":
     st.title(t["hist_title"])
-
-    # Метрики
+    
     m1, m2, m3 = st.columns(3)
     m1.metric(t["metric_participants"], "139", "+81")
     m2.metric(t["metric_countries"], "7", "+1")
-    m3.metric(t["abs_winner"], "Ivan Ivanov", "42 pts") # Приклад з st.metric
-
+    m3.metric(t["abs_winner"], "Ivan Ivanov", "42 pts")
+    
     st.markdown("---")
-
-    # Інтерактивна таблиця
     st.subheader(t["winners_table_title"])
-    # Демо-дані
     winners_data = {
         "Rank": [1, 2, 2, 3, 3],
         "Name": ["Ivan Ivanov", "Maria Petrenko", "John Doe", "Olga S.", "Taras K."],
@@ -425,9 +454,8 @@ elif current_page == "history":
         "Award": ["Gold", "Silver", "Silver", "Bronze", "Bronze"]
     }
     df_winners = pd.DataFrame(winners_data)
-    # st.dataframe дозволяє сортувати стовпці кліком
     st.dataframe(df_winners, use_container_width=True, hide_index=True)
-
+    
     st.markdown("---")
     st.subheader(t["chart_title"])
     data = {'Year': ['2017', '2018', '2019', '2020', '2021', '2022', '2023', '2024', '2025'],
@@ -453,24 +481,78 @@ elif current_page == "contacts":
         st.text_area("", height=150)
         st.button(t["send_btn"])
 
-# === METHODOLOGICAL ===
+# === METHODOLOGICAL & ANALYTICS (Оновлений модуль для звітів) ===
 elif current_page == "method":
-    st.title(t["menu_items"]["method"])
-    st.info("Розділ для студентів кафедри.")
-    with st.form("method_gen"):
-        st.write("Генератор методичної картки")
-        st.text_input("Тема")
-        st.form_submit_button("Згенерувати")
+    st.title(t["method_title"])
+    
+    # Секція 1: Генератор карток (залишаємо як було)
+    with st.expander("🛠️ Генератор методичних матеріалів (для студентів)"):
+        with st.form("method_gen"):
+            st.write("Створення картки задачі")
+            st.text_input("Тема уроку")
+            st.form_submit_button("Згенерувати PDF")
 
-# --- 7. Футер (Підвал) ---
+    st.markdown("---")
+    
+    # Секція 2: АНАЛІТИКА ДЛЯ КАФЕДРИ
+    st.header(t["report_gen_title"])
+    st.info(t["report_desc"])
+
+    # Кнопка генерації
+    if st.button(t["btn_gen_report"], type="primary"):
+        # Імітація даних (Mock Data)
+        stats = {
+            "total": 139,
+            "countries": 7,
+            "regions": 12,
+            "avg_score": 18.5,
+            "top_schools": [
+                "Вінницький фізико-математичний ліцей №17", 
+                "Львівський фізико-математичний ліцей", 
+                "Русанівський ліцей (м. Київ)", 
+                "Подільський науково-технічний ліцей"
+            ]
+        }
+        
+        # Формування рядка зі школами
+        schools_str = ";\n   - ".join(stats["top_schools"])
+        
+        # Форматування шаблону
+        final_report = t["report_template"].format(
+            total=stats["total"],
+            countries=stats["countries"],
+            regions=stats["regions"],
+            avg_score=stats["avg_score"],
+            schools=schools_str
+        )
+        
+        st.success("Звіт успішно згенеровано! / Report generated successfully!")
+        
+        # Виводимо в text_area, щоб зручно було копіювати
+        st.text_area(
+            label=t["report_label"], 
+            value=final_report, 
+            height=300,
+            help="Скопіюйте цей текст та вставте у ваш офіційний звіт."
+        )
+        
+        # Додатково: міні-графік для візуалізації
+        st.caption("Графік для презентації на вчену раду:")
+        chart_data = pd.DataFrame({
+            "Регіон": ["Вінницька", "Київська", "Львівська", "Інші"],
+            "Учнів": [45, 30, 20, 44]
+        })
+        st.bar_chart(chart_data, x="Регіон", y="Учнів", color="#800000")
+
+# --- 8. Футер ---
 st.markdown("---")
 st.markdown(
     f"""
-    <div style='text-align:center; color:grey; padding: 20px;'>
+    <div class="footer">
         <p>{t['footer_rights']}</p>
         <p>
-            <a href="#" style="text-decoration: none; color: #800000;">Facebook</a> |
-            <a href="#" style="text-decoration: none; color: #800000;">Instagram</a> |
+            <a href="#" style="text-decoration: none; color: #800000;">Facebook</a> | 
+            <a href="#" style="text-decoration: none; color: #800000;">Instagram</a> | 
             <a href="mailto:yasinskyi.geometry.olympiad@gmail.com" style="text-decoration: none; color: #800000;">Email</a>
         </p>
     </div>
