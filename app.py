@@ -10,23 +10,19 @@ import zipfile
 # --- 1. Налаштування сторінки (Page Config) ---
 st.set_page_config(
     page_title="Yasinskyi Geometry Olympiad | VSPU",
-    page_icon="📐", # Власна іконка (Геометрія)
+    page_icon="📐",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
 # --- 2. Візуальний тюнінг (CSS) ---
-# Приховуємо елементи Streamlit, щоб виглядало як сайт
 hide_st_style = """
     <style>
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
     header {visibility: hidden;}
     
-    /* Додаткові стилі для краси */
-    .block-container {
-        padding-top: 1rem; /* Зменшуємо відступ зверху */
-    }
+    .block-container { padding-top: 1rem; }
     .header-university { color: #800000; font-family: 'Times New Roman', serif; text-align: center; margin-bottom: 0px; }
     .header-faculty { color: #2c3e50; font-family: sans-serif; text-align: center; font-size: 1.1rem; font-weight: bold; }
     .header-dept { color: #555; text-align: center; font-style: italic; margin-bottom: 20px; border-bottom: 2px solid #800000; padding-bottom: 10px; }
@@ -70,6 +66,14 @@ TRANSLATIONS = {
             "⏳ **Тривалість:** 4 години.",
             "⚖️ **Оцінювання:** Кожна задача від 0 до 7 балів."
         ],
+        "math_beauty_title": "Краса геометрії",
+        "math_beauty_desc": "Геометрія — це мистецтво правильних міркувань на неправильних кресленнях. (Д. Пойя)",
+        "example_problem_label": "Приклад олімпіадної задачі (Демо)",
+        "example_problem_text": """
+        Нехай $ABC$ — гострокутний трикутник, в якому $AB < AC$. Коло $\omega$ проходить через точки $B$ і $C$ та перетинає сторони $AB$ і $AC$ у точках $D$ і $E$ відповідно.
+        Доведіть, що якщо $BD = CE$, то:
+        """,
+        
         "current_title": "Олімпіада 2025/2026",
         "next_date_label": "Наступна олімпіада відбудеться:",
         "next_date_val": "Листопад 2026 року",
@@ -89,8 +93,6 @@ TRANSLATIONS = {
         "metric_countries": "Країн-учасниць",
         "metric_total": "Всього учасників",
         "chart_title": "Динаміка зростання олімпіади",
-        
-        # КОНТАКТИ
         "contact_page_title": "📞 Контакти",
         "contact_title": "Зв'язок з організаторами",
         "contact_subtitle_phones": "Контактні телефони:",
@@ -104,7 +106,6 @@ TRANSLATIONS = {
         "c_person_2": "**Панасенко Олексій Борисович**",
         "c_role_2": "доцент кафедри алгебри і методики навчання математики",
         "c_phone_2": "(067) 215-15-71, (063) 153-04-67",
-        
         "feedback_label": "Напишіть нам повідомлення",
         "send_btn": "Надіслати"
     },
@@ -135,6 +136,14 @@ TRANSLATIONS = {
             "⏳ **Duration:** 4 hours.",
             "⚖️ **Grading:** 0 to 7 points per problem."
         ],
+        "math_beauty_title": "Geometry Aesthetics",
+        "math_beauty_desc": "Geometry is the art of correct reasoning on incorrect figures. (G. Polya)",
+        "example_problem_label": "Example Problem (Demo)",
+        "example_problem_text": """
+        Let $ABC$ be an acute-angled triangle where $AB < AC$. A circle $\omega$ passes through points $B$ and $C$ and intersects sides $AB$ and $AC$ at points $D$ and $E$ respectively.
+        Prove that if $BD = CE$, then:
+        """,
+
         "current_title": "Olympiad 2025/2026",
         "next_date_label": "Next Olympiad Date:",
         "next_date_val": "November 2026",
@@ -154,8 +163,6 @@ TRANSLATIONS = {
         "metric_countries": "Participating Countries",
         "metric_total": "Total Participants",
         "chart_title": "Olympiad Growth Dynamics",
-        
-        # CONTACTS (EN)
         "contact_page_title": "📞 Contacts",
         "contact_title": "Contact Organizers",
         "contact_subtitle_phones": "Contact Phones:",
@@ -169,7 +176,6 @@ TRANSLATIONS = {
         "c_person_2": "**Panasenko Oleksii Borysovych**",
         "c_role_2": "Associate Professor, Department of Algebra and Methods of Teaching Mathematics",
         "c_phone_2": "+38 (067) 215-15-71, +38 (063) 153-04-67",
-
         "feedback_label": "Send us a message",
         "send_btn": "Send"
     }
@@ -182,12 +188,10 @@ TARGET_URL = "https://yasinskyi-geometry-olympiad.com/"
 
 @st.cache_data(ttl=3600)
 def get_live_pdf_links():
-    """Сканує реальний сайт і повертає список посилань"""
     try:
         headers = {"User-Agent": "Mozilla/5.0"}
         r = requests.get(TARGET_URL, headers=headers, timeout=5)
         soup = BeautifulSoup(r.text, 'html.parser')
-        
         links = []
         for a in soup.find_all('a', href=True):
             href = a['href']
@@ -204,17 +208,15 @@ with st.sidebar:
     lang_sel = st.selectbox("Language / Мова", ["UA", "ENG"])
     lang = "ua" if lang_sel == "UA" else "en"
     t = TRANSLATIONS[lang]
-    
     st.markdown("---")
     st.title(t["nav_title"])
     menu_options = list(t["menu_items"].values())
     selected_item = st.radio("Go to:", menu_options, label_visibility="collapsed")
     current_page = [k for k, v in t["menu_items"].items() if v == selected_item][0]
-    
     st.markdown("---")
     st.caption(t["uni_name"].replace("<br>", " "))
 
-# --- 6. Шапка (Університет) ---
+# --- 6. Шапка ---
 col_l, col_c, col_r = st.columns([1, 6, 1])
 with col_l:
     if os.path.exists(LOGO_FILE): st.image(LOGO_FILE, width=90)
@@ -226,11 +228,9 @@ with col_c:
 
 # --- 7. Контент ---
 
-# === HOME (Герой: 1 до 2) ===
+# === HOME (Оновлено з LaTeX) ===
 if current_page == "home":
     st.title(t["banner_title"])
-    
-    # Виконуємо прохання: дві колонки [1, 2]
     col1, col2 = st.columns([1, 2])
     
     with col1:
@@ -246,6 +246,19 @@ if current_page == "home":
         st.markdown('<div class="rules-card">', unsafe_allow_html=True)
         for rule in t["rules_list"]: st.markdown(f"{rule}")
         st.markdown('</div>', unsafe_allow_html=True)
+
+    # --- LATEX SECTION ---
+    st.markdown("---")
+    st.subheader("📐 " + t["math_beauty_title"])
+    st.info(t["math_beauty_desc"])
+    
+    # Красива теорема синусів (LaTeX)
+    st.latex(r"\frac{a}{\sin A} = \frac{b}{\sin B} = \frac{c}{\sin C} = 2R")
+
+    # Приклад задачі з LaTeX
+    with st.expander(t["example_problem_label"]):
+        st.markdown(t["example_problem_text"])
+        st.latex(r"\angle A = 60^\circ")
 
 # === CURRENT ===
 elif current_page == "current":
@@ -322,37 +335,21 @@ elif current_page == "history":
 # === CONTACTS ===
 elif current_page == "contacts":
     st.title(t["contact_page_title"]) 
-    
     col1, col2 = st.columns([1.5, 1])
-    
     with col1:
         st.markdown(f"### {t['contact_title']}")
-        # Адреса
         st.markdown(f"""
         **{t['contact_address_label']}**<br>{t['contact_address_val']}<br><br>
         **{t['contact_email_label']}** {t['contact_email_val']}
         """, unsafe_allow_html=True)
-        
         st.markdown("---")
-        # Телефони (Картки)
         st.subheader(t["contact_subtitle_phones"])
-        
         st.markdown(f"""
-        <div class="contact-card">
-            {t['c_person_1']}<br>
-            <span style="color:grey; font-size:0.9em;">{t['c_role_1']}</span><br>
-            📞 <b>{t['c_phone_1']}</b>
-        </div>
+        <div class="contact-card">{t['c_person_1']}<br><span style="color:grey; font-size:0.9em;">{t['c_role_1']}</span><br>📞 <b>{t['c_phone_1']}</b></div>
         """, unsafe_allow_html=True)
-
         st.markdown(f"""
-        <div class="contact-card">
-            {t['c_person_2']}<br>
-            <span style="color:grey; font-size:0.9em;">{t['c_role_2']}</span><br>
-            📞 <b>{t['c_phone_2']}</b>
-        </div>
+        <div class="contact-card">{t['c_person_2']}<br><span style="color:grey; font-size:0.9em;">{t['c_role_2']}</span><br>📞 <b>{t['c_phone_2']}</b></div>
         """, unsafe_allow_html=True)
-        
     with col2:
         st.markdown(f"### {t['feedback_label']}")
         st.text_area("", height=150)
