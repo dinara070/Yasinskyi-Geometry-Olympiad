@@ -65,6 +65,7 @@ TRANSLATIONS = {
         "chart_title": "Динаміка зростання олімпіади",
         
         # КОНТАКТИ (UA)
+        "contact_page_title": "📞 Контакти", # Додав цей ключ, щоб виправити помилку
         "contact_title": "Зв'язок з організаторами",
         "contact_subtitle_phones": "Контактні телефони:",
         "contact_address_label": "Наша адреса:",
@@ -129,6 +130,7 @@ TRANSLATIONS = {
         "chart_title": "Olympiad Growth Dynamics",
         
         # CONTACTS (EN)
+        "contact_page_title": "📞 Contacts",
         "contact_title": "Contact Organizers",
         "contact_subtitle_phones": "Contact Phones:",
         "contact_address_label": "Our Address:",
@@ -298,9 +300,10 @@ elif current_page == "history":
             'Participants': [58, 76, 129, 136, 169, 145, 100, 58, 139]}
     st.bar_chart(pd.DataFrame(data).set_index('Year'), color="#800000")
 
-# === CONTACTS (UPDATED) ===
+# === CONTACTS (FIXED) ===
 elif current_page == "contacts":
-    st.title(t["contacts"].split(" ")[-1])
+    # ВИПРАВЛЕНО: Використовуємо існуючий ключ
+    st.title(t["contact_page_title"]) 
     
     col1, col2 = st.columns([1.5, 1])
     
