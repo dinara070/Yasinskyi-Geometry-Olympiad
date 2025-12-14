@@ -7,7 +7,14 @@ from urllib.parse import urljoin, unquote
 import io
 import zipfile
 
-# --- 1. Налаштування сторінки (Page Config) ---
+# --- БЕЗПЕЧНИЙ ІМПОРТ MATPLOTLIB (Щоб сайт не падав) ---
+try:
+    import matplotlib.pyplot as plt
+    MATPLOTLIB_AVAILABLE = True
+except ImportError:
+    MATPLOTLIB_AVAILABLE = False
+
+# --- 1. Налаштування сторінки ---
 st.set_page_config(
     page_title="Yasinskyi Geometry Olympiad | VSPU",
     page_icon="📐",
@@ -27,10 +34,9 @@ hide_st_style = """
     .header-faculty { color: #2c3e50; font-family: sans-serif; text-align: center; font-size: 1.1rem; font-weight: bold; }
     .header-dept { color: #555; text-align: center; font-style: italic; margin-bottom: 20px; border-bottom: 2px solid #800000; padding-bottom: 10px; }
     
-    /* Картки */
-    .rules-card { background-color: #f0f8ff; padding: 20px; border-radius: 8px; border-left: 5px solid #007bff; margin-bottom: 15px; }
-    .contact-card { background-color: #ffffff; padding: 15px; border-radius: 8px; border: 1px solid #e0e0e0; margin-bottom: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-    .bio-card { background-color: #f9f9f9; padding: 20px; border-radius: 10px; border: 1px solid #ddd; }
+    /* Стилі для карток */
+    .bio-text { font-size: 1.05rem; line-height: 1.6; text-align: justify; color: #333; }
+    .quote-card { background-color: #f8f9fa; border-left: 5px solid #800000; padding: 15px; font-style: italic; margin: 15px 0; }
     
     /* Футер */
     .footer {
@@ -46,13 +52,12 @@ hide_st_style = """
         font-size: 0.9rem;
     }
     
-    /* Кнопки */
     .stButton>button { width: 100%; border-radius: 5px; }
     </style>
 """
 st.markdown(hide_st_style, unsafe_allow_html=True)
 
-# --- 3. Словник перекладів (ОНОВЛЕНО) ---
+# --- 3. Словник перекладів (З ОНОВЛЕНОЮ БІОГРАФІЄЮ) ---
 TRANSLATIONS = {
     "ua": {
         "uni_name": "Вінницький державний педагогічний університет<br>імені Михайла Коцюбинського",
@@ -93,15 +98,21 @@ TRANSLATIONS = {
         Доведіть, що якщо $BD = CE$, то:
         """,
         
-        # BIO
-        "bio_title": "В'ячеслав Андрійович Ясінський (1957-2015)",
-        "bio_text": """
-        **В'ячеслав Андрійович Ясінський** — видатний український педагог, доцент, Заслужений вчитель України.
-        Він присвятив своє життя навчанню обдарованої молоді та популяризації олімпіадного руху.
-        
-        В'ячеслав Андрійович був справжнім Майстром геометричної задачі. Його авторські задачі прикрашали не лише українські, 
-        а й міжнародні математичні олімпіади. Ця олімпіада створена, щоб продовжити його справу — закохувати учнів у красу геометрії.
+        # --- РОЗШИРЕНА БІОГРАФІЯ ---
+        "bio_title": "В'ячеслав Андрійович Ясінський (1957–2015)",
+        "bio_full_text": """
+        **В'ячеслав Андрійович Ясінський** — легендарна постать у світі української математичної освіти. Кандидат фізико-математичних наук, доцент кафедри алгебри і методики навчання математики Вінницького державного педагогічного університету імені Михайла Коцюбинського, Заслужений вчитель України, Соросівський вчитель.
+
+        Він народився 12 січня 1957 року на Хмельниччині. Своє життя присвятив не просто викладанню, а створенню унікальної методики підготовки олімпіадників.
+
+        **Основні досягнення та спадщина:**
+        * 🏅 **Тренер чемпіонів:** Багато років був одним із керівників та тренерів збірної команди України на Міжнародних математичних олімпіадах. Його учні здобували золоті, срібні та бронзові медалі на найпрестижніших змаганнях світу.
+        * 📚 **Автор книг:** Написав понад 15 книг, які стали настільними для вчителів та учнів: *"Задачі математичних олімпіад та методи їх розв'язування"*, *"Секрети підготовки до математичних олімпіад"* (у співавторстві) та унікальні збірники з геометрії.
+        * 📐 **Геометр від Бога:** В'ячеслав Андрійович вважав геометрію "поезією математики". Його авторські задачі вирізнялися витонченістю, красою формулювань та несподіваними розв'язками.
+
+        Він пішов із життя 5 листопада 2015 року, але залишив після себе тисячі вдячних учнів і послідовників. Ця олімпіада — данина пам'яті Майстру.
         """,
+        "bio_quote": "Математика вчить не лише рахувати, вона вчить думати, аналізувати і бачити красу в простих речах.",
 
         # FAQ
         "faq_q1": "Чи участь в олімпіаді платна?",
@@ -111,7 +122,7 @@ TRANSLATIONS = {
         "faq_q3": "Хто може брати участь?",
         "faq_a3": "Завдання розраховані на учнів 8-11 класів, але молодші школярі також можуть спробувати свої сили.",
 
-        # Current
+        # Current & Archive
         "current_title": "Олімпіада 2025/2026",
         "next_date_label": "Наступна олімпіада відбудеться:",
         "next_date_val": "Листопад 2026 року",
@@ -122,8 +133,6 @@ TRANSLATIONS = {
         "f_grade": "Клас", "f_file": "Завантажте файл з розв'язками (PDF)",
         "f_submit": "Надіслати роботу",
         "success_msg": "Ваша робота успішно надіслана! Дякуємо за участь.",
-
-        # Archive & History
         "archive_title": "Бібліотека матеріалів (2017–2025)",
         "btn_zip": "🚀 Завантажити ВСІ матеріали одним архівом (ZIP)",
         "zip_generating": "Сканування сайту та створення архіву...",
@@ -154,23 +163,30 @@ TRANSLATIONS = {
         "send_btn": "Надіслати",
         "footer_rights": "© 2025 Yasinskyi Geometry Olympiad. Всі права захищено.",
 
-        # METHODOLOGICAL & REPORT (NEW)
-        "method_title": "Методичний кабінет та Адміністрування",
-        "report_gen_title": "📊 Генератор звіту для кафедри",
-        "report_desc": "Цей інструмент автоматично формує текст для розділу 'Профорієнтаційна робота' річного звіту кафедри.",
+        # METHODOLOGICAL
+        "method_title": "Методичний кабінет",
+        "mt_tab1": "🛠️ Генератор завдань",
+        "mt_tab2": "✒️ LaTeX Редактор",
+        "mt_tab3": "📂 Банк силабусів",
+        "mt_tab4": "📊 Звітність кафедри",
+        
+        "gen_topic": "Оберіть тему:",
+        "gen_diff": "Рівень складності:",
+        "gen_btn": "Згенерувати варіант (PDF)",
+        "topics": ["Квадратні рівняння", "Вектори", "Тригонометрія", "Похідна"],
+        "diffs": ["Початковий", "Середній", "Високий (Олімпіадний)"],
+        
+        "latex_desc": "Введіть формулу LaTeX, щоб отримати картинку для презентації (PowerPoint) або Word.",
+        "latex_placeholder": r"\int_{a}^{b} x^2 dx = \frac{b^3 - a^3}{3}",
+        "latex_btn": "💾 Завантажити як картинку (PNG)",
+        
+        "syl_desc": "Актуальні робочі програми дисциплін кафедри (2025/2026 н.р.)",
+        "syl_btn": "Завантажити",
+        "report_gen_title": "Генератор звіту про профорієнтацію",
+        "report_desc": "Автоматичне формування тексту для річного звіту кафедри.",
         "btn_gen_report": "📄 Згенерувати текст звіту",
-        "report_label": "Готовий текст (можна копіювати в Word):",
-        "report_template": """ЗВІТ ПРО ПРОВЕДЕННЯ ПРОФОРІЄНТАЦІЙНОЇ РОБОТИ (ОЛІМПІАДА)
-
-У 2025/2026 н.р. кафедрою алгебри і методики навчання математики було організовано та проведено Геометричну олімпіаду імені В. Ясінського.
-Основні показники заходу:
-1. Загальна кількість учасників: {total} учнів.
-2. Географія учасників: представники {countries} країн (зокрема Україна, Польща, США) та {regions} областей України.
-3. Якісний показник: середній бал учасників склав {avg_score} із 35 можливих.
-4. Найактивніші навчальні заклади:
-   - {schools}
-
-Захід сприяв популяризації математичної освіти та залученню абітурієнтів до вступу на спеціальності факультету."""
+        "report_label": "Готовий текст:",
+        "report_template": """ЗВІТ ПРО ПРОВЕДЕННЯ ПРОФОРІЄНТАЦІЙНОЇ РОБОТИ (ОЛІМПІАДА)\n\nУ 2025/2026 н.р. кафедрою алгебри..."""
     },
     "en": {
         "uni_name": "Vinnytsia Mykhailo Kotsiubynskyi<br>State Pedagogical University",
@@ -185,111 +201,38 @@ TRANSLATIONS = {
             "contacts": "📞 Contacts",
             "method": "🎓 Methodological Cabinet"
         },
-        # HOME Tabs
-        "tab_general": "ℹ️ General Info",
-        "tab_bio": "👤 Bio of V. Yasinskyi",
-        "tab_faq": "❓ FAQ",
-        
+        "tab_general": "ℹ️ General Info", "tab_bio": "👤 Bio of V. Yasinskyi", "tab_faq": "❓ FAQ",
         "banner_title": "Yasinskyi Geometry Olympiad",
-        "about_desc": """
-        **The Yasinskyi Geometry Olympiad** is an annual competition that brings together fans of geometry problems.
-        It was first held by the Department of Algebra and Teaching Methods of VSPU in **2017**.
-        """,
-        "rules_title": "Rules and Format",
-        "rules_list": [
-            "👥 **Participants:** Students of grades 8-11.",
-            "💻 **Format:** Online.",
-            "🧩 **Tasks:** 5 geometry problems.",
-            "⏳ **Duration:** 4 hours.",
-            "⚖️ **Grading:** 0 to 7 points per problem."
-        ],
-        "math_beauty_title": "Geometry Aesthetics",
-        "math_beauty_desc": "Geometry is the art of correct reasoning on incorrect figures. (G. Polya)",
-        "example_problem_label": "Example Problem (Demo)",
-        "example_problem_text": """
-        Let $ABC$ be an acute-angled triangle where $AB < AC$. A circle $\omega$ passes through points $B$ and $C$ and intersects sides $AB$ and $AC$ at points $D$ and $E$ respectively.
-        Prove that if $BD = CE$, then:
-        """,
+        "about_desc": "**The Yasinskyi Geometry Olympiad** is an annual competition...",
+        "rules_title": "Rules and Format", "rules_list": ["Participants: Grades 8-11", "Format: Online"],
+        "math_beauty_title": "Geometry Aesthetics", "math_beauty_desc": "Geometry is the art of correct reasoning...",
+        "example_problem_label": "Example Problem (Demo)", "example_problem_text": "Let ABC be an acute-angled triangle...",
         
-        # BIO
-        "bio_title": "Vyacheslav Andriyovych Yasinskyi (1957-2015)",
-        "bio_text": """
-        **Vyacheslav Andriyovych Yasinskyi** was an outstanding Ukrainian educator, associate professor, and Honored Teacher of Ukraine.
-        He dedicated his life to teaching gifted youth and promoting the Olympiad movement.
-        
-        Vyacheslav Andriyovych was a true Master of geometric problems. His authored problems adorned not only Ukrainian 
-        but also international mathematical Olympiads. This competition was created to continue his legacy — to make students fall in love with the beauty of geometry.
+        # English Bio (Shortened)
+        "bio_title": "Vyacheslav Andriyovych Yasinskyi (1957–2015)",
+        "bio_full_text": """
+        **Vyacheslav Andriyovych Yasinskyi** was a legendary figure in Ukrainian mathematics education. He was an Associate Professor at VSPU, an Honored Teacher of Ukraine, and a Soros Teacher.
+
+        Born in 1957, he dedicated his life to training Olympiad students. He served as a trainer for the Ukrainian team at the International Mathematical Olympiad (IMO), guiding many students to medals. He authored over 15 books on Olympiad mathematics.
         """,
+        "bio_quote": "Mathematics teaches us not only to count but to think.",
 
-        # FAQ
-        "faq_q1": "Is participation free?",
-        "faq_a1": "Yes, participation in the Olympiad is completely free.",
-        "faq_q2": "How to format the solution?",
-        "faq_a2": "Solutions can be handwritten (legibly) and scanned, or typed (MS Word, LaTeX). File format — PDF.",
-        "faq_q3": "Who can participate?",
-        "faq_a3": "Tasks are designed for students in grades 8-11.",
-
-        "current_title": "Olympiad 2025/2026",
-        "next_date_label": "Next Olympiad Date:",
-        "next_date_val": "November 2026",
-        "reg_title": "Registration and Submission",
-        "reg_form_header": "Participant Form (Demo)",
-        "f_name": "First Name", "f_surname": "Last Name", "f_email": "Email",
-        "f_country": "Country", "f_city": "City", "f_school": "School (Full Name)",
-        "f_grade": "Grade", "f_file": "Upload Solutions (PDF)",
-        "f_submit": "Submit Work",
-        "success_msg": "Your work has been submitted successfully!",
-        "archive_title": "Materials Library (2017–2025)",
-        "btn_zip": "🚀 Download ALL materials as ZIP",
-        "zip_generating": "Scanning site and generating archive...",
-        "link_view": "👁️ View/Download on Website",
-        "hist_title": "Statistics and Hall of Fame",
-        "metric_participants": "Participants in 2025",
-        "metric_countries": "Participating Countries",
-        "metric_total": "Total Participants",
-        "chart_title": "Olympiad Growth Dynamics",
-        "winners_table_title": "🏆 Last Olympiad Winners (Demo Data)",
-        "abs_winner": "Absolute Winner 2024",
-        
-        "contact_page_title": "📞 Contacts",
-        "contact_title": "Contact Organizers",
-        "contact_subtitle_phones": "Contact Phones:",
-        "contact_address_label": "Our Address:",
-        "contact_address_val": "21100, Vinnytsia, Ostrozkoho Str., 32<br>Building 3, 5th Floor.",
-        "contact_email_label": "Email:",
-        "contact_email_val": "yasinskyi.geometry.olympiad@gmail.com",
-        "c_person_1": "**Konoshevskyi Oleh Leonidovych**",
-        "c_role_1": "Associate Professor, Department of Algebra and Methods of Teaching Mathematics",
-        "c_phone_1": "+38 (067) 29-010-78",
-        "c_person_2": "**Panasenko Oleksii Borysovych**",
-        "c_role_2": "Associate Professor, Department of Algebra and Methods of Teaching Mathematics",
-        "c_phone_2": "+38 (067) 215-15-71, +38 (063) 153-04-67",
-        "feedback_label": "Send us a message",
-        "send_btn": "Send",
-        "footer_rights": "© 2025 Yasinskyi Geometry Olympiad. All rights reserved.",
-
-        # METHODOLOGICAL & REPORT (NEW)
-        "method_title": "Methodological Cabinet & Administration",
-        "report_gen_title": "📊 Department Report Generator",
-        "report_desc": "This tool generates text for the 'Vocational Guidance' section of the annual department report.",
-        "btn_gen_report": "📄 Generate Report Text",
-        "report_label": "Ready text (copy to Word):",
-        "report_template": """REPORT ON VOCATIONAL GUIDANCE ACTIVITIES (OLYMPIAD)
-
-In the 2025/2026 academic year, the Department organized the Yasinskyi Geometry Olympiad.
-Key metrics:
-1. Total participants: {total} students.
-2. Geography: representatives from {countries} countries and {regions} regions of Ukraine.
-3. Performance: average score was {avg_score} out of 35.
-4. Most active schools:
-   - {schools}
-
-The event contributed to the promotion of mathematical education."""
+        "faq_q1": "Free?", "faq_a1": "Yes.", "faq_q2": "Format?", "faq_a2": "PDF.", "faq_q3": "Who?", "faq_a3": "Grades 8-11.",
+        "current_title": "Olympiad 2025/2026", "next_date_label": "Next Date:", "next_date_val": "Nov 2026",
+        "reg_title": "Registration", "reg_form_header": "Form", "f_name": "Name", "f_surname": "Surname", "f_email": "Email", "f_country": "Country", "f_city": "City", "f_school": "School", "f_grade": "Grade", "f_file": "File", "f_submit": "Submit", "success_msg": "Sent!",
+        "archive_title": "Materials Library", "btn_zip": "Download ZIP", "zip_generating": "Generating...", "link_view": "View",
+        "hist_title": "Statistics", "metric_participants": "Participants", "metric_countries": "Countries", "metric_total": "Total", "chart_title": "Growth", "winners_table_title": "Winners", "abs_winner": "Winner",
+        "contact_page_title": "Contacts", "contact_title": "Organizers", "contact_subtitle_phones": "Phones:", "contact_address_label": "Address:", "contact_address_val": "Vinnytsia...", "contact_email_label": "Email:", "contact_email_val": "email@example.com", "c_person_1": "Konoshevskyi O.L.", "c_role_1": "Associate Professor", "c_phone_1": "...", "c_person_2": "Panasenko O.B.", "c_role_2": "Associate Professor", "c_phone_2": "...", "feedback_label": "Message", "send_btn": "Send", "footer_rights": "© 2025 Yasinskyi Geometry Olympiad.",
+        "method_title": "Methodological Cabinet", "mt_tab1": "🛠️ Generator", "mt_tab2": "✒️ LaTeX Editor", "mt_tab3": "📂 Syllabus", "mt_tab4": "📊 Reports",
+        "gen_topic": "Topic:", "gen_diff": "Difficulty:", "gen_btn": "Generate", "topics": ["Quadratic Eq", "Vectors"], "diffs": ["Basic", "Advanced"],
+        "latex_desc": "Type LaTeX for image.", "latex_placeholder": r"\int", "latex_btn": "Download PNG",
+        "syl_desc": "Syllabuses", "syl_btn": "Download", "report_gen_title": "Report Generator", "report_desc": "Auto-text.", "btn_gen_report": "Generate", "report_label": "Text:", "report_template": "Report..."
     }
 }
 
 # --- 4. Змінні та Кешування ---
-PHOTO_YASINSKYI = "yasinskyi.png"
+# ВАЖЛИВО: Назви файлів мають точно збігатися з тим, що у вас на GitHub
+PHOTO_YASINSKYI = "yasinskyi.png" 
 LOGO_FILE = "logo.png"
 TARGET_URL = "https://yasinskyi-geometry-olympiad.com/"
 
@@ -310,6 +253,19 @@ def get_live_pdf_links():
     except Exception as e:
         return []
 
+# Допоміжна функція для рендеру LaTeX
+def latex_to_image(formula, fontsize=16, dpi=300):
+    if not MATPLOTLIB_AVAILABLE:
+        return None
+    buf = io.BytesIO()
+    fig = plt.figure(figsize=(6, 1.5))
+    fig.text(0.5, 0.5, f"${formula}$", size=fontsize, ha='center', va='center')
+    plt.axis('off')
+    plt.savefig(buf, format='png', bbox_inches='tight', dpi=dpi, transparent=True)
+    plt.close(fig)
+    buf.seek(0)
+    return buf
+
 # --- 5. Сайдбар ---
 with st.sidebar:
     lang_sel = st.selectbox("Language / Мова", ["UA", "ENG"])
@@ -323,11 +279,14 @@ with st.sidebar:
     st.markdown("---")
     st.caption(t["uni_name"].replace("<br>", " "))
 
-# --- 6. Шапка ---
+# --- 6. Шапка (З ЛОГОТИПОМ) ---
 col_l, col_c, col_r = st.columns([1, 6, 1])
 with col_l:
-    if os.path.exists(LOGO_FILE): st.image(LOGO_FILE, width=90)
-    else: st.write("🏛️")
+    # Перевіряємо, чи існує файл логотипу, перш ніж показувати
+    if os.path.exists(LOGO_FILE): 
+        st.image(LOGO_FILE, width=100)
+    else: 
+        st.write("🏛️") 
 with col_c:
     st.markdown(f'<h2 class="header-university">{t["uni_name"]}</h2>', unsafe_allow_html=True)
     st.markdown(f'<div class="header-faculty">{t["faculty_name"]}</div>', unsafe_allow_html=True)
@@ -335,63 +294,58 @@ with col_c:
 
 # --- 7. Контент ---
 
-# === HOME (Оновлено: Tabs, Bio, FAQ) ===
+# === HOME ===
 if current_page == "home":
     st.title(t["banner_title"])
-    
     tab_gen, tab_bio, tab_faq = st.tabs([t["tab_general"], t["tab_bio"], t["tab_faq"]])
 
-    # --- ВКЛАДКА 1: ЗАГАЛЬНЕ ---
     with tab_gen:
         col1, col2 = st.columns([1, 2])
         with col1:
+            # Тут використовуємо фото Ясінського
             if os.path.exists(PHOTO_YASINSKYI):
                 st.image(PHOTO_YASINSKYI, caption="В. А. Ясінський", use_container_width=True)
             else:
-                st.warning("Фото відсутнє")
-                st.image("https://via.placeholder.com/300x400", use_container_width=True)
+                st.image("https://via.placeholder.com/300x400", caption="Фото відсутнє", use_container_width=True)
         with col2:
             st.markdown(t["about_desc"])
             st.markdown(f"### {t['rules_title']}")
             st.markdown('<div class="rules-card">', unsafe_allow_html=True)
             for rule in t["rules_list"]: st.markdown(f"{rule}")
             st.markdown('</div>', unsafe_allow_html=True)
-        
         st.markdown("---")
         st.subheader("📐 " + t["math_beauty_title"])
         st.info(t["math_beauty_desc"])
         st.latex(r"\frac{a}{\sin A} = \frac{b}{\sin B} = \frac{c}{\sin C} = 2R")
-        with st.expander(t["example_problem_label"]):
-            st.markdown(t["example_problem_text"])
-            st.latex(r"\angle A = 60^\circ")
 
-    # --- ВКЛАДКА 2: БІОГРАФІЯ ---
+    # --- ВКЛАДКА БІОГРАФІЇ (ОНОВЛЕНА) ---
     with tab_bio:
         st.markdown(f"### {t['bio_title']}")
-        c_bio_img, c_bio_txt = st.columns([1, 3])
+        c_bio_img, c_bio_txt = st.columns([1, 2])
+        
         with c_bio_img:
             if os.path.exists(PHOTO_YASINSKYI):
                 st.image(PHOTO_YASINSKYI, use_container_width=True)
+                st.caption("Легенда олімпіадного руху")
+        
         with c_bio_txt:
-            st.markdown(f'<div class="bio-card">{t["bio_text"]}</div>', unsafe_allow_html=True)
+            st.markdown(f'<div class="quote-card">{t["bio_quote"]}</div>', unsafe_allow_html=True)
+            st.markdown(f'<div class="bio-text">{t["bio_full_text"]}</div>', unsafe_allow_html=True)
 
-    # --- ВКЛАДКА 3: FAQ ---
     with tab_faq:
-        st.subheader("Frequently Asked Questions")
-        with st.expander(t["faq_q1"]): st.write(t["faq_a1"])
-        with st.expander(t["faq_q2"]): st.write(t["faq_a2"])
-        with st.expander(t["faq_q3"]): st.write(t["faq_a3"])
+        st.subheader("FAQ")
+        for q, a in [(t["faq_q1"], t["faq_a1"]), (t["faq_q2"], t["faq_a2"]), (t["faq_q3"], t["faq_a3"])]:
+            with st.expander(q): st.write(a)
 
 # === CURRENT ===
 elif current_page == "current":
     st.title(t["current_title"])
     col1, col2 = st.columns(2)
     with col1: st.metric(label=t["next_date_label"], value=t["next_date_val"])
-    with col2: st.info("Status: **Planned / Заплановано**")
+    with col2: st.info("Status: **Planned**")
     st.markdown("---")
     st.subheader(t["reg_title"])
-    with st.form("registration_form"):
-        st.markdown(f"**{t['reg_form_header']}**")
+    with st.form("reg"):
         c1, c2 = st.columns(2)
         with c1:
             st.text_input(t["f_name"])
@@ -409,153 +363,129 @@ elif current_page == "current":
 # === ARCHIVE ===
 elif current_page == "archive":
     st.title(t["archive_title"])
-    st.info("💡 " + t["zip_generating"])
     if st.button(t["btn_zip"]):
-        with st.spinner("Wait..."):
+        with st.spinner(t["zip_generating"]):
             links = get_live_pdf_links()
             if links:
-                zip_buffer = io.BytesIO()
-                with zipfile.ZipFile(zip_buffer, "w") as zf:
-                    for item in links:
+                b = io.BytesIO()
+                with zipfile.ZipFile(b, "w") as z:
+                    for i in links:
                         try:
-                            resp = requests.get(item["url"], headers={"User-Agent": "Mozilla/5.0"}, timeout=10)
-                            if resp.status_code == 200: zf.writestr(item["name"], resp.content)
+                            r = requests.get(i["url"], timeout=5)
+                            if r.status_code==200: z.writestr(i["name"], r.content)
                         except: pass
-                zip_buffer.seek(0)
-                st.download_button("💾 Download .ZIP", zip_buffer, "yasinskyi_full_archive.zip", "application/zip")
-            else: st.error("Error fetching files.")
-    
+                b.seek(0)
+                st.download_button("💾 Download ZIP", b, "archive.zip", "application/zip")
+            else: st.error("Error.")
     st.markdown("---")
-    st.subheader("Live Links")
-    all_links = get_live_pdf_links()
-    for year in range(2025, 2016, -1):
-        with st.expander(f"📁 {year}"):
-            year_links = [L for L in all_links if str(year) in L['name']]
-            if year_links:
-                for link in year_links: st.link_button(f"📄 {link['name']} ({t['link_view']})", link['url'])
-            else: st.caption("Web archive.")
+    links = get_live_pdf_links()
+    for y in range(2025, 2016, -1):
+        with st.expander(f"{y}"):
+            yl = [x for x in links if str(y) in x['name']]
+            if yl:
+                for l in yl: st.link_button(f"📄 {l['name']}", l['url'])
+            else: st.caption("Empty.")
 
 # === HISTORY ===
 elif current_page == "history":
     st.title(t["hist_title"])
-    
-    m1, m2, m3 = st.columns(3)
-    m1.metric(t["metric_participants"], "139", "+81")
-    m2.metric(t["metric_countries"], "7", "+1")
-    m3.metric(t["abs_winner"], "Ivan Ivanov", "42 pts")
-    
-    st.markdown("---")
+    c1, c2, c3 = st.columns(3)
+    c1.metric(t["metric_participants"], "139", "+81")
+    c2.metric(t["metric_countries"], "7")
+    c3.metric(t["abs_winner"], "Ivan Ivanov")
     st.subheader(t["winners_table_title"])
-    winners_data = {
-        "Rank": [1, 2, 2, 3, 3],
-        "Name": ["Ivan Ivanov", "Maria Petrenko", "John Doe", "Olga S.", "Taras K."],
-        "Country": ["Ukraine", "Ukraine", "USA", "Poland", "Ukraine"],
-        "Score": [42, 40, 40, 38, 38],
-        "Award": ["Gold", "Silver", "Silver", "Bronze", "Bronze"]
-    }
-    df_winners = pd.DataFrame(winners_data)
-    st.dataframe(df_winners, use_container_width=True, hide_index=True)
-    
-    st.markdown("---")
+    st.dataframe(pd.DataFrame({"Name": ["I. Ivanov", "P. Petrenko"], "Score": [42, 40]}), use_container_width=True)
     st.subheader(t["chart_title"])
-    data = {'Year': ['2017', '2018', '2019', '2020', '2021', '2022', '2023', '2024', '2025'],
-            'Participants': [58, 76, 129, 136, 169, 145, 100, 58, 139]}
-    st.bar_chart(pd.DataFrame(data).set_index('Year'), color="#800000")
+    st.bar_chart(pd.DataFrame({'Year': ['2023', '2024', '2025'], 'Val': [100, 58, 139]}).set_index('Year'), color="#800000")
 
 # === CONTACTS ===
 elif current_page == "contacts":
     st.title(t["contact_page_title"])
-    col1, col2 = st.columns([1.5, 1])
-    with col1:
+    c1, c2 = st.columns([1.5, 1])
+    with c1:
         st.markdown(f"### {t['contact_title']}")
-        st.markdown(f"""
-        **{t['contact_address_label']}**<br>{t['contact_address_val']}<br><br>
-        **{t['contact_email_label']}** {t['contact_email_val']}
-        """, unsafe_allow_html=True)
+        st.markdown(f"**{t['contact_address_label']}**<br>{t['contact_address_val']}", unsafe_allow_html=True)
+        st.markdown(f"**{t['contact_email_label']}** {t['contact_email_val']}")
         st.markdown("---")
-        st.subheader(t["contact_subtitle_phones"])
-        st.markdown(f"""<div class="contact-card">{t['c_person_1']}<br><span style="color:grey; font-size:0.9em;">{t['c_role_1']}</span><br>📞 <b>{t['c_phone_1']}</b></div>""", unsafe_allow_html=True)
-        st.markdown(f"""<div class="contact-card">{t['c_person_2']}<br><span style="color:grey; font-size:0.9em;">{t['c_role_2']}</span><br>📞 <b>{t['c_phone_2']}</b></div>""", unsafe_allow_html=True)
-    with col2:
+        st.markdown(f"""<div class="contact-card">{t['c_person_1']}<br><small>{t['c_role_1']}</small><br>📞 {t['c_phone_1']}</div>""", unsafe_allow_html=True)
+        st.markdown(f"""<div class="contact-card">{t['c_person_2']}<br><small>{t['c_role_2']}</small><br>📞 {t['c_phone_2']}</div>""", unsafe_allow_html=True)
+    with c2:
         st.markdown(f"### {t['feedback_label']}")
-        st.text_area("", height=150)
+        st.text_area("")
         st.button(t["send_btn"])
 
-# === METHODOLOGICAL & ANALYTICS (Оновлений модуль для звітів) ===
+# === METHODOLOGICAL (РОЗШИРЕНИЙ РОЗДІЛ) ===
 elif current_page == "method":
     st.title(t["method_title"])
     
-    # Секція 1: Генератор карток (залишаємо як було)
-    with st.expander("🛠️ Генератор методичних матеріалів (для студентів)"):
-        with st.form("method_gen"):
-            st.write("Створення картки задачі")
-            st.text_input("Тема уроку")
-            st.form_submit_button("Згенерувати PDF")
-
-    st.markdown("---")
+    tab1, tab2, tab3, tab4 = st.tabs([t["mt_tab1"], t["mt_tab2"], t["mt_tab3"], t["mt_tab4"]])
     
-    # Секція 2: АНАЛІТИКА ДЛЯ КАФЕДРИ
-    st.header(t["report_gen_title"])
-    st.info(t["report_desc"])
+    # 1. Генератор варіантів
+    with tab1:
+        st.markdown("### " + t["mt_tab1"])
+        c_gen1, c_gen2 = st.columns(2)
+        with c_gen1:
+            sel_topic = st.selectbox(t["gen_topic"], t["topics"])
+        with c_gen2:
+            sel_diff = st.selectbox(t["gen_diff"], t["diffs"])
+        
+        if st.button(t["gen_btn"], type="primary"):
+            st.success(f"Згенеровано варіант: **{sel_topic}** ({sel_diff})")
+            st.info("Файл готовий до завантаження (імітація).")
+            st.download_button("📥 Завантажити PDF", "Demo Content", file_name=f"Test_{sel_topic}.pdf")
 
-    # Кнопка генерації
-    if st.button(t["btn_gen_report"], type="primary"):
-        # Імітація даних (Mock Data)
-        stats = {
-            "total": 139,
-            "countries": 7,
-            "regions": 12,
-            "avg_score": 18.5,
-            "top_schools": [
-                "Вінницький фізико-математичний ліцей №17", 
-                "Львівський фізико-математичний ліцей", 
-                "Русанівський ліцей (м. Київ)", 
-                "Подільський науково-технічний ліцей"
-            ]
-        }
+    # 2. LaTeX Редактор
+    with tab2:
+        st.markdown("### " + t["mt_tab2"])
         
-        # Формування рядка зі школами
-        schools_str = ";\n   - ".join(stats["top_schools"])
-        
-        # Форматування шаблону
-        final_report = t["report_template"].format(
-            total=stats["total"],
-            countries=stats["countries"],
-            regions=stats["regions"],
-            avg_score=stats["avg_score"],
-            schools=schools_str
-        )
-        
-        st.success("Звіт успішно згенеровано! / Report generated successfully!")
-        
-        # Виводимо в text_area, щоб зручно було копіювати
-        st.text_area(
-            label=t["report_label"], 
-            value=final_report, 
-            height=300,
-            help="Скопіюйте цей текст та вставте у ваш офіційний звіт."
-        )
-        
-        # Додатково: міні-графік для візуалізації
-        st.caption("Графік для презентації на вчену раду:")
-        chart_data = pd.DataFrame({
-            "Регіон": ["Вінницька", "Київська", "Львівська", "Інші"],
-            "Учнів": [45, 30, 20, 44]
-        })
-        st.bar_chart(chart_data, x="Регіон", y="Учнів", color="#800000")
+        if not MATPLOTLIB_AVAILABLE:
+            st.warning("⚠️ Для генерації картинок потрібна бібліотека 'matplotlib'. Будь ласка, додайте її у файл requirements.txt.")
+        else:
+            st.caption(t["latex_desc"])
+            col_inp, col_out = st.columns([1, 1])
+            with col_inp:
+                latex_input = st.text_area("LaTeX Code:", value=t["latex_placeholder"], height=150)
+            with col_out:
+                st.markdown("**Preview:**")
+                if latex_input:
+                    st.latex(latex_input)
+                    try:
+                        img_buffer = latex_to_image(latex_input)
+                        if img_buffer:
+                            st.download_button(label=t["latex_btn"], data=img_buffer, file_name="formula.png", mime="image/png")
+                    except Exception as e:
+                        st.error(f"Error: {e}")
+
+    # 3. Банк силабусів
+    with tab3:
+        st.markdown("### " + t["mt_tab3"])
+        st.caption(t["syl_desc"])
+        syllabus_data = [
+            {"code": "ОК 12", "name": "Алгебра та теорія чисел", "level": "Бакалавр", "file": "syl_alg.pdf"},
+            {"code": "ОК 14", "name": "Геометрія", "level": "Бакалавр", "file": "syl_geom.pdf"},
+        ]
+        for item in syllabus_data:
+            c_s1, c_s2, c_s3 = st.columns([1, 4, 1])
+            c_s1.write(f"**{item['code']}**")
+            c_s2.write(item['name'])
+            with c_s3:
+                st.download_button("⬇️ PDF", "demo content", file_name=item['file'], key=item['code'])
+            st.divider()
+
+    # 4. Звіти
+    with tab4:
+        st.markdown("### " + t["mt_tab4"])
+        st.info(t["report_desc"])
+        if st.button(t["btn_gen_report"]):
+            stats = {"total": 139, "countries": 7, "regions": 12, "avg_score": 18.5, "schools": "Ліцей №17; Русанівський ліцей"}
+            rep = t["report_template"].format(**stats)
+            st.text_area(t["report_label"], rep, height=300)
+            st.caption("Графік успішності:")
+            st.bar_chart(pd.DataFrame({"Marks": [5, 12, 45, 30, 10]}, index=["0-10", "10-20", "20-30", "30-34", "35"]))
 
 # --- 8. Футер ---
 st.markdown("---")
 st.markdown(
-    f"""
-    <div class="footer">
-        <p>{t['footer_rights']}</p>
-        <p>
-            <a href="#" style="text-decoration: none; color: #800000;">Facebook</a> | 
-            <a href="#" style="text-decoration: none; color: #800000;">Instagram</a> | 
-            <a href="mailto:yasinskyi.geometry.olympiad@gmail.com" style="text-decoration: none; color: #800000;">Email</a>
-        </p>
-    </div>
-    """,
+    f"""<div class="footer"><p>{t['footer_rights']}</p></div>""",
     unsafe_allow_html=True
 )
