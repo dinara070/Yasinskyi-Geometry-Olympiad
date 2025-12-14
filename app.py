@@ -6,8 +6,7 @@ from bs4 import BeautifulSoup
 from urllib.parse import urljoin, unquote
 import io
 import zipfile
-import json
-import hashlib # Для шифрування паролів
+import json # Додано для роботи з файлом налаштувань
 
 # --- 1. Налаштування сторінки ---
 st.set_page_config(
@@ -17,11 +16,10 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# --- 2. СИСТЕМА ФАЙЛІВ (CONFIG & USERS) ---
+# --- 2. СИСТЕМА КОНФІГУРАЦІЇ (JSON) ---
 CONFIG_FILE = "site_config.json"
-USERS_FILE = "users.json"
 
-# --- 2.1 Налаштування сайту ---
+# Значення за замовчуванням (якщо файл не існує)
 DEFAULT_CONFIG = {
     "next_event_date_ua": "Листопад 2026 року",
     "next_event_date_en": "November 2026",
@@ -31,6 +29,7 @@ DEFAULT_CONFIG = {
 }
 
 def load_config():
+    """Завантажує налаштування з файлу або створює дефолтні"""
     if not os.path.exists(CONFIG_FILE):
         with open(CONFIG_FILE, "w", encoding="utf-8") as f:
             json.dump(DEFAULT_CONFIG, f, ensure_ascii=False, indent=4)
@@ -40,47 +39,14 @@ def load_config():
             return json.load(f)
 
 def save_config(config_data):
+    """Зберігає налаштування у файл"""
     with open(CONFIG_FILE, "w", encoding="utf-8") as f:
         json.dump(config_data, f, ensure_ascii=False, indent=4)
 
+# Завантажуємо актуальні дані при старті
 site_config = load_config()
 
-# --- 2.2 Система користувачів (Реєстрація/Вхід) ---
-def hash_password(password):
-    """Шифрує пароль у SHA-256"""
-    return hashlib.sha256(password.encode()).hexdigest()
-
-def load_users():
-    """Завантажує користувачів або створює дефолтного адміна"""
-    if not os.path.exists(USERS_FILE):
-        # Створюємо першого адміна за замовчуванням
-        default_users = {"admin": hash_password("admin123")}
-        with open(USERS_FILE, "w", encoding="utf-8") as f:
-            json.dump(default_users, f, ensure_ascii=False, indent=4)
-        return default_users
-    else:
-        with open(USERS_FILE, "r", encoding="utf-8") as f:
-            return json.load(f)
-
-def save_users(users_data):
-    with open(USERS_FILE, "w", encoding="utf-8") as f:
-        json.dump(users_data, f, ensure_ascii=False, indent=4)
-
-def authenticate(username, password):
-    users = load_users()
-    if username in users and users[username] == hash_password(password):
-        return True
-    return False
-
-def register_user(username, password):
-    users = load_users()
-    if username in users:
-        return False # Користувач вже існує
-    users[username] = hash_password(password)
-    save_users(users)
-    return True
-
-# --- 3. CSS Стилізація ---
+# --- 3. Візуальний тюнінг (CSS) ---
 hide_st_style = """
     <style>
     #MainMenu {visibility: hidden;}
@@ -94,6 +60,7 @@ hide_st_style = """
     .contact-card { background-color: #ffffff; padding: 15px; border-radius: 8px; border: 1px solid #e0e0e0; margin-bottom: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
     .bio-card { background-color: #f9f9f9; padding: 20px; border-radius: 10px; border: 1px solid #ddd; }
     .stButton>button { width: 100%; border-radius: 5px; }
+    /* Стиль для адмінки */
     .admin-box { border: 2px solid #e74c3c; padding: 20px; border-radius: 10px; background-color: #fff5f5; }
     </style>
 """
@@ -108,18 +75,19 @@ TRANSLATIONS = {
         "nav_title": "Меню навігації",
         "menu_items": {
             "home": "🏠 Про олімпіаду",
-            "current": "📝 Поточна олімпіада",
+            "current": "📝 Поточна олімпіада", # Прибрав рік з назви, бо він динамічний
             "archive": "📚 Архів задач",
             "history": "📊 Історія та результати",
             "contacts": "📞 Контакти",
             "method": "🎓 Методичний кабінет",
-            "admin": "⚙️ Адмін-панель"
+            "admin": "⚙️ Адмін-панель" # Новий пункт
         },
         "banner_title": "Геометрична олімпіада імені В'ячеслава Ясінського",
         "tab_general": "ℹ️ Загальна інформація",
         "tab_bio": "👤 Біографія В. Ясінського",
         "tab_faq": "❓ FAQ",
         "about_desc": "**Геометрична олімпіада імені В'ячеслава Ясінського** — це щорічне змагання...",
+        "rules_title": "Правила та формат",
         "rules_list": ["👥 **Учасники:** Учні 8-11 класів.", "💻 **Формат:** Онлайн.", "🧩 **Завдання:** 5 задач.", "⏳ **Тривалість:** 4 години.", "⚖️ **Оцінювання:** 0-7 балів."],
         "math_beauty_title": "Краса геометрії",
         "math_beauty_desc": "Геометрія — це мистецтво правильних міркувань на неправильних кресленнях. (Д. Пойя)",
@@ -127,6 +95,7 @@ TRANSLATIONS = {
         "bio_text": "Видатний український педагог, доцент, Заслужений вчитель України...",
         "current_title": "Поточна Олімпіада",
         "next_date_label": "Дата проведення:",
+        # next_date_val - БЕРЕТЬСЯ З JSON
         "reg_title": "Реєстрація та подача робіт",
         "reg_form_header": "Форма учасника",
         "success_msg": "Ваша робота успішно надіслана!",
@@ -142,24 +111,12 @@ TRANSLATIONS = {
         "c_role_2": "доцент кафедри алгебри і методики навчання математики",
         "c_phone_2": "(067) 215-15-71, (063) 153-04-67",
         "footer_rights": "© 2025 Yasinskyi Geometry Olympiad. Всі права захищено.",
-        # Admin / Login
-        "admin_area_title": "Викладацька",
-        "tab_login": "Вхід",
-        "tab_register": "Реєстрація",
-        "lbl_username": "Логін",
-        "lbl_password": "Пароль",
-        "lbl_confirm_pass": "Підтвердіть пароль",
-        "btn_login": "Увійти",
-        "btn_register": "Зареєструватися",
-        "btn_logout": "Вийти з акаунту",
-        "msg_login_success": "Успішний вхід!",
-        "msg_login_fail": "Невірний логін або пароль.",
-        "msg_reg_success": "Акаунт створено! Тепер увійдіть.",
-        "msg_reg_exists": "Такий користувач вже існує.",
-        "msg_pass_mismatch": "Паролі не співпадають.",
+        # Admin
+        "admin_login_title": "Вхід для викладачів",
+        "admin_pass_label": "Пароль",
         "admin_welcome": "Вітаємо в панелі керування!",
-        "admin_save": "Зберегти налаштування",
-        "admin_success": "Дані оновлено!"
+        "admin_save": "Зберегти зміни",
+        "admin_success": "Налаштування оновлено!"
     },
     "en": {
         "uni_name": "Vinnytsia Mykhailo Kotsiubynskyi<br>State Pedagogical University",
@@ -187,6 +144,7 @@ TRANSLATIONS = {
         "bio_text": "Outstanding Ukrainian educator, associate professor...",
         "current_title": "Current Olympiad",
         "next_date_label": "Next Event Date:",
+        # next_date_val - FROM JSON
         "reg_title": "Registration and Submission",
         "reg_form_header": "Participant Form",
         "success_msg": "Submitted successfully!",
@@ -202,23 +160,11 @@ TRANSLATIONS = {
         "c_role_2": "Associate Professor",
         "c_phone_2": "+38 (067) 215-15-71, +38 (063) 153-04-67",
         "footer_rights": "© 2025 Yasinskyi Geometry Olympiad. All rights reserved.",
-        # Admin / Login
-        "admin_area_title": "Lecturer Area",
-        "tab_login": "Login",
-        "tab_register": "Register",
-        "lbl_username": "Username",
-        "lbl_password": "Password",
-        "lbl_confirm_pass": "Confirm Password",
-        "btn_login": "Log In",
-        "btn_register": "Sign Up",
-        "btn_logout": "Log Out",
-        "msg_login_success": "Login successful!",
-        "msg_login_fail": "Invalid username or password.",
-        "msg_reg_success": "Account created! Please log in.",
-        "msg_reg_exists": "User already exists.",
-        "msg_pass_mismatch": "Passwords do not match.",
+        # Admin
+        "admin_login_title": "Lecturer Login",
+        "admin_pass_label": "Password",
         "admin_welcome": "Welcome to Control Panel!",
-        "admin_save": "Save Settings",
+        "admin_save": "Save Changes",
         "admin_success": "Settings updated!"
     }
 }
@@ -237,7 +183,7 @@ def get_live_pdf_links():
                 for a in soup.find_all('a', href=True) if a['href'].lower().endswith('.pdf')]
     except: return []
 
-# --- 6. Сайдбар та Система Входу/Реєстрації ---
+# --- 6. Сайдбар та Логін ---
 with st.sidebar:
     lang_sel = st.selectbox("Language / Мова", ["UA", "ENG"])
     lang = "ua" if lang_sel == "UA" else "en"
@@ -245,60 +191,35 @@ with st.sidebar:
     st.markdown("---")
     st.title(t["nav_title"])
     
-    # Меню
+    # Визначаємо доступні пункти меню
     options = list(t["menu_items"].values())
-    if "is_admin" not in st.session_state: st.session_state["is_admin"] = False
     
-    # Приховуємо адмінку для гостей
+    # !!! ЛОГІКА АДМІНКИ !!!
+    if "is_admin" not in st.session_state:
+        st.session_state["is_admin"] = False
+
+    # Показуємо пункт "Адмінка" тільки якщо залогінені
     if not st.session_state["is_admin"]:
-        admin_key = "⚙️ Адмін-панель" if lang == "ua" else "⚙️ Admin Panel"
-        if admin_key in options: options.remove(admin_key)
+        # Видаляємо останній пункт (Admin) зі списку опцій для студентів
+        if lang == "ua": options.remove("⚙️ Адмін-панель")
+        else: options.remove("⚙️ Admin Panel")
     
     selected_item = st.radio("Go to:", options, label_visibility="collapsed")
+    
+    # Зворотній пошук ключа сторінки
     current_page = [k for k, v in t["menu_items"].items() if v == selected_item][0]
     
     st.markdown("---")
     
-    # Блок Авторизації (Login/Register)
+    # Блок входу (Login)
     if not st.session_state["is_admin"]:
-        with st.expander(t["admin_area_title"], expanded=False):
-            auth_tab1, auth_tab2 = st.tabs([t["tab_login"], t["tab_register"]])
-            
-            # ВХІД
-            with auth_tab1:
-                with st.form("login_form"):
-                    u_login = st.text_input(t["lbl_username"], key="login_user")
-                    p_login = st.text_input(t["lbl_password"], type="password", key="login_pass")
-                    if st.form_submit_button(t["btn_login"]):
-                        if authenticate(u_login, p_login):
-                            st.session_state["is_admin"] = True
-                            st.session_state["current_user"] = u_login
-                            st.success(t["msg_login_success"])
-                            st.rerun()
-                        else:
-                            st.error(t["msg_login_fail"])
-            
-            # РЕЄСТРАЦІЯ
-            with auth_tab2:
-                with st.form("reg_form"):
-                    u_reg = st.text_input(t["lbl_username"], key="reg_user")
-                    p_reg = st.text_input(t["lbl_password"], type="password", key="reg_pass")
-                    p_reg_conf = st.text_input(t["lbl_confirm_pass"], type="password", key="reg_pass_conf")
-                    
-                    if st.form_submit_button(t["btn_register"]):
-                        if p_reg != p_reg_conf:
-                            st.error(t["msg_pass_mismatch"])
-                        elif len(p_reg) < 4:
-                            st.warning("Password too short.")
-                        else:
-                            if register_user(u_reg, p_reg):
-                                st.success(t["msg_reg_success"])
-                            else:
-                                st.error(t["msg_reg_exists"])
-
+        with st.expander(t["admin_login_title"]):
+            password = st.text_input(t["admin_pass_label"], type="password")
+            if password == "admin123":  # ПАРОЛЬ
+                st.session_state["is_admin"] = True
+                st.rerun()
     else:
-        st.write(f"👤 **{st.session_state.get('current_user', 'Admin')}**")
-        if st.button(t["btn_logout"]):
+        if st.button("🚪 Logout / Вийти"):
             st.session_state["is_admin"] = False
             st.rerun()
 
@@ -315,12 +236,14 @@ with col_c:
     st.markdown(f'<div class="header-faculty">{t["faculty_name"]}</div>', unsafe_allow_html=True)
     st.markdown(f'<div class="header-dept">{t["dept_name"]}</div>', unsafe_allow_html=True)
 
-# --- 8. КОНТЕНТ ---
+# --- 8. КОНТЕНТ СТОРІНОК ---
 
-# === ADMIN PANEL ===
+# === ADMIN PANEL (1. Адмінка) ===
 if current_page == "admin" and st.session_state["is_admin"]:
     st.title(t["menu_items"]["admin"])
     st.markdown(f'<div class="admin-box"><h3>{t["admin_welcome"]}</h3>', unsafe_allow_html=True)
+    
+    st.write("Тут ви можете змінювати інформацію на сайті без втручання в код.")
     
     with st.form("admin_config"):
         col1, col2 = st.columns(2)
@@ -332,23 +255,32 @@ if current_page == "admin" and st.session_state["is_admin"]:
             st.markdown("**Settings (EN)**")
             new_date_en = st.text_input("Event Date (EN)", site_config["next_event_date_en"])
             new_news_en = st.text_area("Important Announcement (EN)", site_config["news_en"])
+            
         reg_open = st.checkbox("Відкрити реєстрацію?", site_config["is_registration_open"])
         
         if st.form_submit_button(t["admin_save"]):
+            # Оновлюємо словник
             site_config["next_event_date_ua"] = new_date_ua
             site_config["next_event_date_en"] = new_date_en
             site_config["news_ua"] = new_news_ua
             site_config["news_en"] = new_news_en
             site_config["is_registration_open"] = reg_open
+            
+            # Зберігаємо у файл
             save_config(site_config)
             st.success(t["admin_success"])
+            
     st.markdown('</div>', unsafe_allow_html=True)
+    st.info("💡 Зміни застосуються миттєво для всіх користувачів.")
 
 # === HOME ===
 elif current_page == "home":
     st.title(t["banner_title"])
+    
+    # Використовуємо динамічне оголошення з адмінки
     news_text = site_config["news_ua"] if lang == "ua" else site_config["news_en"]
-    if news_text: st.warning(f"📢 **News:** {news_text}")
+    if news_text:
+        st.warning(f"📢 **News:** {news_text}")
 
     tab_gen, tab_bio, tab_faq = st.tabs([t["tab_general"], t["tab_bio"], t["tab_faq"]])
     
@@ -363,6 +295,7 @@ elif current_page == "home":
             st.markdown('<div class="rules-card">', unsafe_allow_html=True)
             for rule in t["rules_list"]: st.markdown(f"{rule}")
             st.markdown('</div>', unsafe_allow_html=True)
+        
         st.markdown("---")
         st.subheader("📐 " + t["math_beauty_title"])
         st.latex(r"\frac{a}{\sin A} = \frac{b}{\sin B} = \frac{c}{\sin C} = 2R")
@@ -376,21 +309,26 @@ elif current_page == "home":
             st.markdown(f'<div class="bio-card">{t["bio_text"]}</div>', unsafe_allow_html=True)
 
     with tab_faq:
-        st.subheader("FAQ")
-        st.info("Розділ в розробці...")
+        st.write("FAQ content...")
 
 # === CURRENT ===
 elif current_page == "current":
     st.title(t["current_title"])
+    
+    # ДИНАМІЧНА ДАТА (з файлу конфігурації)
     display_date = site_config["next_event_date_ua"] if lang == "ua" else site_config["next_event_date_en"]
+    
     col1, col2 = st.columns(2)
     with col1: st.metric(label=t["next_date_label"], value=display_date)
     with col2: 
-        if site_config["is_registration_open"]: st.success("Status: **Open**")
-        else: st.info("Status: **Planned**")
+        if site_config["is_registration_open"]:
+            st.success("Status: **Open / Відкрито**")
+        else:
+            st.info("Status: **Planned / Заплановано**")
     
     st.markdown("---")
     st.subheader(t["reg_title"])
+    
     if site_config["is_registration_open"]:
         with st.form("registration_form"):
             st.markdown(f"**{t['reg_form_header']}**")
@@ -404,12 +342,14 @@ elif current_page == "current":
             if st.form_submit_button("Submit"):
                 st.success(t["success_msg"])
     else:
-        st.warning("⚠️ Registration closed.")
+        st.warning("⚠️ Реєстрація наразі закрита. Слідкуйте за датою проведення.")
 
 # === ARCHIVE ===
 elif current_page == "archive":
     st.title(t["archive_title"])
-    if st.button("🚀 Download Archive"): pass 
+    if st.button("🚀 Download Archive"):
+        # Логіка скачування (як в попередніх версіях)
+        pass 
     st.write("Список задач...")
 
 # === HISTORY ===
@@ -434,4 +374,7 @@ elif current_page == "method":
 
 # --- Footer ---
 st.markdown("---")
-st.markdown(f"<div style='text-align:center; color:grey; padding: 20px;'><p>{t['footer_rights']}</p></div>", unsafe_allow_html=True)
+st.markdown(
+    f"""<div style='text-align:center; color:grey; padding: 20px;'><p>{t['footer_rights']}</p></div>""", 
+    unsafe_allow_html=True
+)
