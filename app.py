@@ -30,8 +30,7 @@ hide_st_style = """
     /* Картки */
     .rules-card { background-color: #f0f8ff; padding: 20px; border-radius: 8px; border-left: 5px solid #007bff; margin-bottom: 15px; }
     .contact-card { background-color: #ffffff; padding: 15px; border-radius: 8px; border: 1px solid #e0e0e0; margin-bottom: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-    .bio-card { background-color: #f9f9f9; padding: 20px; border-radius: 10px; border: 1px solid #ddd; }
-
+    
     /* Футер */
     .footer {
         position: fixed;
@@ -67,11 +66,7 @@ TRANSLATIONS = {
             "contacts": "📞 Контакти",
             "method": "🎓 Методичний кабінет"
         },
-        # HOME Tabs
-        "tab_general": "ℹ️ Загальна інформація",
-        "tab_bio": "👤 Біографія В. Ясінського",
-        "tab_faq": "❓ FAQ (Питання)",
-
+        
         "banner_title": "Геометрична олімпіада імені В'ячеслава Ясінського",
         "about_desc": """
         **Геометрична олімпіада імені В'ячеслава Ясінського** — це щорічне змагання, яке об'єднує поціновувачів геометричних задач.
@@ -92,24 +87,6 @@ TRANSLATIONS = {
         Нехай $ABC$ — гострокутний трикутник, в якому $AB < AC$. Коло $\omega$ проходить через точки $B$ і $C$ та перетинає сторони $AB$ і $AC$ у точках $D$ і $E$ відповідно.
         Доведіть, що якщо $BD = CE$, то:
         """,
-
-        # BIO
-        "bio_title": "В'ячеслав Андрійович Ясінський (1957-2015)",
-        "bio_text": """
-        **В'ячеслав Андрійович Ясінський** — видатний український педагог, доцент, Заслужений вчитель України.
-        Він присвятив своє життя навчанню обдарованої молоді та популяризації олімпіадного руху.
-
-        В'ячеслав Андрійович був справжнім Майстром геометричної задачі. Його авторські задачі прикрашали не лише українські,
-        а й міжнародні математичні олімпіади. Ця олімпіада створена, щоб продовжити його справу — закохувати учнів у красу геометрії.
-        """,
-
-        # FAQ
-        "faq_q1": "Чи участь в олімпіаді платна?",
-        "faq_a1": "Ні, участь в олімпіаді є повністю безкоштовною.",
-        "faq_q2": "Як оформити розв'язок?",
-        "faq_a2": "Розв'язки можна писати від руки (розбірливо) та сканувати, або набирати в редакторах (MS Word, LaTeX). Формат файлу — PDF.",
-        "faq_q3": "Хто може брати участь?",
-        "faq_a3": "Завдання розраховані на учнів 8-11 класів, але молодші школярі також можуть спробувати свої сили.",
 
         # Current
         "current_title": "Олімпіада 2025/2026",
@@ -167,11 +144,7 @@ TRANSLATIONS = {
             "contacts": "📞 Contacts",
             "method": "🎓 Methodological Cabinet"
         },
-        # HOME Tabs
-        "tab_general": "ℹ️ General Info",
-        "tab_bio": "👤 Bio of V. Yasinskyi",
-        "tab_faq": "❓ FAQ",
-
+        
         "banner_title": "Yasinskyi Geometry Olympiad",
         "about_desc": """
         **The Yasinskyi Geometry Olympiad** is an annual competition that brings together fans of geometry problems.
@@ -192,24 +165,6 @@ TRANSLATIONS = {
         Let $ABC$ be an acute-angled triangle where $AB < AC$. A circle $\omega$ passes through points $B$ and $C$ and intersects sides $AB$ and $AC$ at points $D$ and $E$ respectively.
         Prove that if $BD = CE$, then:
         """,
-
-        # BIO
-        "bio_title": "Vyacheslav Andriyovych Yasinskyi (1957-2015)",
-        "bio_text": """
-        **Vyacheslav Andriyovych Yasinskyi** was an outstanding Ukrainian educator, associate professor, and Honored Teacher of Ukraine.
-        He dedicated his life to teaching gifted youth and promoting the Olympiad movement.
-
-        Vyacheslav Andriyovych was a true Master of geometric problems. His authored problems adorned not only Ukrainian
-        but also international mathematical Olympiads. This competition was created to continue his legacy — to make students fall in love with the beauty of geometry.
-        """,
-
-        # FAQ
-        "faq_q1": "Is participation free?",
-        "faq_a1": "Yes, participation in the Olympiad is completely free.",
-        "faq_q2": "How to format the solution?",
-        "faq_a2": "Solutions can be handwritten (legibly) and scanned, or typed (MS Word, LaTeX). File format — PDF.",
-        "faq_q3": "Who can participate?",
-        "faq_a3": "Tasks are designed for students in grades 8-11.",
 
         "current_title": "Olympiad 2025/2026",
         "next_date_label": "Next Olympiad Date:",
@@ -253,7 +208,7 @@ TRANSLATIONS = {
 }
 
 # --- 4. Змінні та Кешування ---
-PHOTO_YASINSKYI = "yasinskyi.png"
+# Файл yasinskyi.png більше не використовується
 LOGO_FILE = "logo.png"
 TARGET_URL = "https://yasinskyi-geometry-olympiad.com/"
 
@@ -276,7 +231,6 @@ def get_live_pdf_links():
 
 # --- 5. Сайдбар ---
 with st.sidebar:
-    # 3. Багатомовність: Реалізовано через Selectbox, який оновлює змінну t
     lang_sel = st.selectbox("Language / Мова", ["UA", "ENG"])
     lang = "ua" if lang_sel == "UA" else "en"
     t = TRANSLATIONS[lang]
@@ -291,6 +245,7 @@ with st.sidebar:
 # --- 6. Шапка ---
 col_l, col_c, col_r = st.columns([1, 6, 1])
 with col_l:
+    # Логотип залишається
     if os.path.exists(LOGO_FILE): st.image(LOGO_FILE, width=90)
     else: st.write("🏛️")
 with col_c:
@@ -300,54 +255,26 @@ with col_c:
 
 # --- 7. Контент ---
 
-# === HOME (Оновлено: Tabs, Bio, FAQ) ===
+# === HOME (Оновлено: лише Загальна інформація, без фото Ясінського) ===
 if current_page == "home":
     st.title(t["banner_title"])
+    
+    # Інформація одразу (без вкладок і без біографії)
+    st.markdown(t["about_desc"])
+    st.markdown("---")
+    
+    st.markdown(f"### {t['rules_title']}")
+    st.markdown('<div class="rules-card">', unsafe_allow_html=True)
+    for rule in t["rules_list"]: st.markdown(f"{rule}")
+    st.markdown('</div>', unsafe_allow_html=True)
 
-    # Використовуємо вкладки для кращої структури
-    tab_gen, tab_bio, tab_faq = st.tabs([t["tab_general"], t["tab_bio"], t["tab_faq"]])
-
-    # --- ВКЛАДКА 1: ЗАГАЛЬНЕ ---
-    with tab_gen:
-        col1, col2 = st.columns([1, 2])
-        with col1:
-            if os.path.exists(PHOTO_YASINSKYI):
-                st.image(PHOTO_YASINSKYI, caption="В. А. Ясінський", use_container_width=True)
-            else:
-                st.warning("Фото відсутнє")
-                st.image("https://via.placeholder.com/300x400", use_container_width=True)
-        with col2:
-            st.markdown(t["about_desc"])
-            st.markdown(f"### {t['rules_title']}")
-            st.markdown('<div class="rules-card">', unsafe_allow_html=True)
-            for rule in t["rules_list"]: st.markdown(f"{rule}")
-            st.markdown('</div>', unsafe_allow_html=True)
-
-        st.markdown("---")
-        st.subheader("📐 " + t["math_beauty_title"])
-        st.info(t["math_beauty_desc"])
-        st.latex(r"\frac{a}{\sin A} = \frac{b}{\sin B} = \frac{c}{\sin C} = 2R")
-        with st.expander(t["example_problem_label"]):
-            st.markdown(t["example_problem_text"])
-            st.latex(r"\angle A = 60^\circ")
-
-    # --- ВКЛАДКА 2: БІОГРАФІЯ (4. Біографія В. Ясінського) ---
-    with tab_bio:
-        st.markdown(f"### {t['bio_title']}")
-        c_bio_img, c_bio_txt = st.columns([1, 3])
-        with c_bio_img:
-            # Тут можна додати ефект "чорно-білого фото" через CSS, якщо треба, але просто фото теж ок
-            if os.path.exists(PHOTO_YASINSKYI):
-                st.image(PHOTO_YASINSKYI, use_container_width=True)
-        with c_bio_txt:
-            st.markdown(f'<div class="bio-card">{t["bio_text"]}</div>', unsafe_allow_html=True)
-
-    # --- ВКЛАДКА 3: FAQ (6. Розділ FAQ) ---
-    with tab_faq:
-        st.subheader("Frequently Asked Questions")
-        with st.expander(t["faq_q1"]): st.write(t["faq_a1"])
-        with st.expander(t["faq_q2"]): st.write(t["faq_a2"])
-        with st.expander(t["faq_q3"]): st.write(t["faq_a3"])
+    st.markdown("---")
+    st.subheader("📐 " + t["math_beauty_title"])
+    st.info(t["math_beauty_desc"])
+    st.latex(r"\frac{a}{\sin A} = \frac{b}{\sin B} = \frac{c}{\sin C} = 2R")
+    with st.expander(t["example_problem_label"]):
+        st.markdown(t["example_problem_text"])
+        st.latex(r"\angle A = 60^\circ")
 
 # === CURRENT ===
 elif current_page == "current":
@@ -402,7 +329,7 @@ elif current_page == "archive":
                 for link in year_links: st.link_button(f"📄 {link['name']} ({t['link_view']})", link['url'])
             else: st.caption("Web archive.")
 
-# === HISTORY (Оновлено: 5. Інтерактивна галерея) ===
+# === HISTORY ===
 elif current_page == "history":
     st.title(t["hist_title"])
 
@@ -410,7 +337,7 @@ elif current_page == "history":
     m1, m2, m3 = st.columns(3)
     m1.metric(t["metric_participants"], "139", "+81")
     m2.metric(t["metric_countries"], "7", "+1")
-    m3.metric(t["abs_winner"], "Ivan Ivanov", "42 pts") # Приклад з st.metric
+    m3.metric(t["abs_winner"], "Ivan Ivanov", "42 pts")
 
     st.markdown("---")
 
@@ -425,7 +352,6 @@ elif current_page == "history":
         "Award": ["Gold", "Silver", "Silver", "Bronze", "Bronze"]
     }
     df_winners = pd.DataFrame(winners_data)
-    # st.dataframe дозволяє сортувати стовпці кліком
     st.dataframe(df_winners, use_container_width=True, hide_index=True)
 
     st.markdown("---")
